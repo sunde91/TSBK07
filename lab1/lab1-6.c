@@ -13,8 +13,10 @@
 #endif
 #include "MicroGlut.h"
 #include "GL_utilities.h"
+#include "VectorUtils3.h"
 #include "loadobj.h"
 #include <math.h>
+#include <stdlib.h>
 
 // 6.1) So that we can simulate how light behaves
 // 6.2) made a phong shader
@@ -47,6 +49,7 @@ void init(void)
     GLuint vertexBufferObjID;
     GLuint normalBufferObjID;
     GLuint indexBufferObjID;
+    GLuint colorBufferObjID;
 
     dumpInfo();
 
@@ -58,11 +61,13 @@ void init(void)
 
     // Load model
     m = LoadModel("bunny.obj");
-    CenterModel(m);
+    //CenterModel(m);
 
     // Load and compile shader
     program = loadShaders("lab1-6.vert", "lab1-6.frag");
     printError("init shader");
+
+    glEnable(GL_DEPTH_TEST);
 
     // Upload geometry to the GPU:
 
@@ -73,6 +78,7 @@ void init(void)
     glGenBuffers(1, &vertexBufferObjID);
     glGenBuffers(1, &normalBufferObjID);
     glGenBuffers(1, &indexBufferObjID);
+    glGenBuffers(1, &colorBufferObjID);
 
     // VBO for vertex data
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
@@ -92,7 +98,21 @@ void init(void)
 
     // VBO for index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObjID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->numVertices * sizeof(GLuint), m->indexArray, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->numIndices * sizeof(GLuint), m->indexArray, GL_STATIC_DRAW);
+
+    // VBO color data
+    GLfloat * colors = (GLfloat*) malloc(3 * m->numVertices * sizeof(GLfloat));
+    for(int i = 0; i < 3 * m->numVertices; ++i)
+        colors[i] = ((float)rand()) / RAND_MAX;
+
+    printf("ok");
+
+    glBindBuffer(GL_ARRAY_BUFFER, colorBufferObjID);
+    glBufferData(GL_ARRAY_BUFFER, 3 * m->numVertices * sizeof(GLfloat), colors, GL_STATIC_DRAW);
+    glVertexAttribPointer(glGetAttribLocation(program, "in_Color"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(glGetAttribLocation(program, "in_Color"));
+
+    free(colors);
 
     // End of upload of geometry
 
@@ -101,6 +121,8 @@ void init(void)
 
 GLfloat t;
 GLfloat speed = 0.001;
+float angleX = 0;
+float angleY = 0;
 void update(void)
 {      
     GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
@@ -113,7 +135,13 @@ void update(void)
     myMatrix[1][0] = sin(tt);
     myMatrix[1][1] = cos(tt);
 
-    glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_TRUE, myMatrix);
+    angleX += 0.01;
+    angleY += 0.02;
+    mat4 rotX = Rx(angleX);
+    mat4 rotY = Ry(angleY);
+    mat4 rotMat = Mult(rotX, rotY);
+
+    glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_TRUE, rotMat.m);
 }
 
 void display(void)
@@ -122,7 +150,7 @@ void display(void)
     update();
 
     // clear the screen
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glBindVertexArray(vertexArrayObjID);	// Select VAO
     //glDrawArrays(GL_TRIANGLES, 0, 3 * m->numVertices);	// draw object

@@ -1,12 +1,13 @@
 # set this variable to the director in which you saved the common files
 COMMON_DIR = ../common/
-PLATFORM = MAC
+PLATFORM = Linux
 
-DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.m $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
-ifeq (${PLATFORM}, MAC)
+ifeq (${PLATFORM}, Mac)
+	DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.m $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
 	LIBS = -framework OpenGL -framework Cocoa -lm
 else
-	-lXt -lX11 -lm
+	DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.c $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
+	LIBS = -lXt -lX11 -lGL -lm
 endif
 
 FLAGS = -DGL_GLEXT_PROTOTYPES 
