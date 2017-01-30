@@ -16,9 +16,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-// 5.1)
+// 5.1) 
 // 5.2)
-// 5.3)
 
 // Globals
 // Data would normally be read from files

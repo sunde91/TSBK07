@@ -14,7 +14,7 @@ INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
 
 COMPILE = gcc -Wall
 
-PROGRAMS = lab1-1 lab1-2 lab1-3 lab1-4 lab1-5
+PROGRAMS = lab1-1 lab1-2 lab1-3 lab1-4 lab1-5 lab1-6
 all : $(PROGRAMS)
 
 lab1-1 : lab1-1.c $(DEPS)
@@ -30,6 +30,9 @@ lab1-4 : lab1-4.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 lab1-5 : lab1-5.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+
+lab1-6 : lab1-6.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 .PHONY: clean
