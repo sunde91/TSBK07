@@ -77,7 +77,7 @@ void init(void)
     LOAD_TEXTURE("maskros512", &tex);
 
     // Load and compile shader
-    program = LOAD_SHADERS("lab2-3");
+    program = LOAD_SHADERS("lab2-4");
     printError("init shader");
 
     glEnable(GL_DEPTH_TEST);
@@ -97,7 +97,7 @@ void init(void)
     transMat = T(0,0,-2);
     rotMat = IdentityMatrix();
     modelMatrix = Mult(transMat, rotMat);
-    cameraMatrix = lookAt(0,0,-2, 0,0,2, 0,1,0); // TODO
+    cameraMatrix = lookAt(1,1,-7, 0,0,0, 0,1,0); // TODO
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
     glBufferData(GL_ARRAY_BUFFER, 3 * model->numVertices * sizeof(GLfloat), model->vertexArray, GL_STATIC_DRAW);
