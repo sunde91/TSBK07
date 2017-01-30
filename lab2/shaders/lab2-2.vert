@@ -16,5 +16,5 @@ void main(void)
         var_Normal = normalMatrix * in_Normal;
 	gl_Position = myMatrix*vec4(in_Position, 1.0);
 
-    var_TexCoord = vec2(cos(time * in_TexCoord.s), sin(time * in_TexCoord.t));
+    var_TexCoord = vec2(2 * in_TexCoord.s, 2 * in_TexCoord.t);
 }
