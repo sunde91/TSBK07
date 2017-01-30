@@ -16,13 +16,16 @@ INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
 SRC_DIR = src
 COMPILE = gcc -Wall
 
-PROGRAMS = lab2-1 lab2-2
+PROGRAMS = lab2-1 lab2-2 lab2-3
 all : $(PROGRAMS)
 
 lab2-1 : $(SRC_DIR)/lab2-1.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 lab2-2 : $(SRC_DIR)/lab2-2.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+
+lab2-3 : $(SRC_DIR)/lab2-3.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 .PHONY: clean
