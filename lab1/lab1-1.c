@@ -23,6 +23,10 @@ GLfloat vertices[] =
 	0.5f,-0.5f,0.0f
 };
 
+// answers
+// 1.a) Where is the on-screen coordinate system located? Answer : screen origin = (0,0)
+// 1.b) Which directions are the X&Y-axis pointing in the on-screen coordinate system? X-axis = right, Y-axis = up
+// 1.c) Is it possible to control the color of the triangle from the program? Yes, if we change the shader source code
 
 // vertex array object
 unsigned int vertexArrayObjID;

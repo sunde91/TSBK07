@@ -10,13 +10,11 @@ else
 endif
 
 FLAGS = -DGL_GLEXT_PROTOTYPES 
-
 INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
 
 COMPILE = gcc -Wall
 
 PROGRAMS = lab1-1 lab1-2 lab1-3
-
 all : $(PROGRAMS)
 
 lab1-1 : lab1-1.c $(DEPS)

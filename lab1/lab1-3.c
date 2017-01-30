@@ -26,23 +26,23 @@ GLfloat vertices[] =
 
 
 
-GLfloat myMatrix[] =
-{    1.0f, 0.0f, 0.0f, 0.5f,
-	    0.0f, 1.0f, 0.0f, 0.0f,
-	    0.0f, 0.0f, 1.0f, 0.0f,
-	    0.0f, 0.0f, 0.0f, 1.0f
+GLfloat myMatrix[4][4] = {
+    {1.0f, 0.0f, 0.0f, 0.5f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f}
 };
 
 
 // vertex array object
 unsigned int vertexArrayObjID;
+// Reference to shader program
+GLuint program;
 
 void init(void)
 {
 	// vertex buffer object, used for uploading the geometry
 	unsigned int vertexBufferObjID;
-	// Reference to shader program
-	GLuint program;
 
 	dumpInfo();
 
@@ -76,10 +76,29 @@ void init(void)
 	printError("init arrays");
 }
 
+GLfloat t;
+GLfloat speed = 0.001;
+void update(void)
+{      
+    GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
+    GLfloat dt = new_t - t;
+    t = new_t;
+
+    printf("FPS = %f\n", 1000.0f / dt);
+
+    GLfloat tt = speed * t;
+    myMatrix[0][0] = cos(tt);
+    myMatrix[0][1] = -sin(tt);
+    myMatrix[1][0] = sin(tt);
+    myMatrix[1][1] = cos(tt);
+    
+    glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_TRUE, myMatrix);
+}
 
 void display(void)
 {
 	printError("pre display");
+        update();
 
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT);

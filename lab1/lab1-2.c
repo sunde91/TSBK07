@@ -14,6 +14,10 @@
 #include "MicroGlut.h"
 #include "GL_utilities.h"
 
+// 2.1) in/out is varying variables (too be interpolated), uniform is a the same for all vertices
+// 2.2) interpolated vectors 
+// 2.3) Uploads a uniform float 4x4 matrix to the shader program
+
 // Globals
 // Data would normally be read from files
 GLfloat vertices[] =
