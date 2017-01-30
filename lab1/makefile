@@ -1,11 +1,33 @@
 # set this variable to the director in which you saved the common files
-commondir = ../common/
-platform = Mac
+COMMON_DIR = ../common/
+PLATFORM = MAC
 
-all : lab1-1 
+DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.m $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
+ifeq (${PLATFORM}, MAC)
+	LIBS = -framework OpenGL -framework Cocoa -lm
+else
+	-lXt -lX11 -lm
+endif
 
-lab1-1 : lab1-1.c $(commondir)GL_utilities.c $(commondir)VectorUtils3.c $(commondir)loadobj.c $(commondir)LoadTGA.c $(commondir)$(platform)/MicroGlut.m
-	gcc -Wall -o lab1-1 -I$(commondir) -I../common/$(platform) -DGL_GLEXT_PROTOTYPES lab1-1.c $(commondir)GL_utilities.c $(commondir)loadobj.c $(commondir)VectorUtils3.c $(commondir)LoadTGA.c $(commondir)$(platform)/MicroGlut.m -framework OpenGL -framework Cocoa -lm
+FLAGS = -DGL_GLEXT_PROTOTYPES 
 
+INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
+
+COMPILE = gcc -Wall
+
+PROGRAMS = lab1-1 lab1-2 lab1-3
+
+all : $(PROGRAMS)
+
+lab1-1 : lab1-1.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+
+lab1-2 : lab1-2.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+
+lab1-3 : lab1-3.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+
+.PHONY: clean
 clean :
-	rm lab1-1 
+	rm $(PROGRAMS)
