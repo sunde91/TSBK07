@@ -10,7 +10,7 @@ out vec4 out_Color;
 void main(void)
 {
         const vec3 lightSource = vec3(0.58, 0.58, -0.58);
-        const float shadeAmbient = 0.15;
+        const float shadeAmbient = 0.25;
         const vec3 view = vec3(0,0,-1);
 
         vec3 normal = normalize(var_Normal);
@@ -20,7 +20,7 @@ void main(void)
         vec3 reflection = 2 * dot(normal, lightSource) * normal - lightSource;
         float shadeSpec = pow(clamp(dot(view, reflection), 0, 1), 25.0);
 
-        float shade = clamp(shadeAmbient + 0.3 * shadeDiffuse + 0.7 * shadeSpec, 0, 1);
-
-	out_Color = texture(texUnit, var_TexCoord);
+        float shade = clamp(shadeAmbient + 0.4 * shadeDiffuse + 0.7 * shadeSpec, 0, 1);
+	    vec4 tex_Color = texture(texUnit, var_TexCoord);
+        out_Color = shade * tex_Color;
 }

@@ -119,7 +119,7 @@ void init(void)
     glEnableVertexAttribArray(glGetAttribLocation(program, "in_Normal")); printError("3");
 
     printError("normal");
-
+    
     // VBO vertex data
     if (model->texCoordArray != NULL)
     {
@@ -128,11 +128,15 @@ void init(void)
         glVertexAttribPointer(glGetAttribLocation(program, "in_TexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(glGetAttribLocation(program, "in_TexCoord"));
     }
-
+    else {
+        printf("no texture coordinates found\n");
+    }
+    
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, tex);
     glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    
 
     printError("tex");
     // End of upload of geometry

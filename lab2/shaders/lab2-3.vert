@@ -13,8 +13,8 @@ out vec2 var_TexCoord;
 
 void main(void)
 {
-        mat3 rotMatrix = mat3(affineMatrix);
-        var_Normal = rotMatrix * in_Normal;
+    mat3 rotMatrix = mat3(affineMatrix);
+    var_Normal = rotMatrix * in_Normal;
 	gl_Position = projMatrix*affineMatrix*vec4(in_Position, 1.0);
 
     var_TexCoord = vec2(2 * in_TexCoord.s, 2 * in_TexCoord.t);
