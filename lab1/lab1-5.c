@@ -14,22 +14,82 @@
 #include "MicroGlut.h"
 #include "GL_utilities.h"
 #include <math.h>
+#include <stdlib.h>
 
-// 3.1) 47.6 or 50 
+// 5.1)
+// 5.2)
+// 5.3)
 
 // Globals
 // Data would normally be read from files
-GLfloat vertices[] =
-{
-	-0.5f,-0.5f,0.0f,
-	-0.5f,0.5f,0.0f,
-	0.5f,-0.5f,0.0f
+
+GLfloat vertices[24][3][3] = {
+    {
+        {0,0,0},
+        {0,0,1},
+        {0,1,0}
+    },
+    {
+        {0,1,1},
+        {0,1,0},
+        {0,0,1}
+    },
+    {
+        {0,0,1},
+        {0,1,1},
+        {1,0,1}
+    },
+    {
+        {1,1,1},
+        {1,0,1},
+        {0,1,1}
+    },
+    {
+        {1,0,0},
+        {1,0,1},
+        {1,1,0}
+    },
+    {
+        {1,1,1},
+        {1,1,0},
+        {1,0,1}
+    },
+    {
+        {0,0,0},
+        {0,1,0},
+        {1,0,0}
+    },
+    {
+        {1,1,0},
+        {1,0,0},
+        {0,1,0}
+    },
+    {
+        {0,0,0},
+        {0,0,1},
+        {1,0,0}
+    },
+    {
+        {1,0,1},
+        {1,0,0},
+        {0,0,1}
+    },
+    {
+        {0,1,0},
+        {0,1,1},
+        {1,1,0}
+    },
+    {
+        {1,1,1},
+        {1,1,0},
+        {0,1,1}
+    },
 };
 
-
+GLfloat colors[36];
 
 GLfloat myMatrix[4][4] = {
-    {1.0f, 0.0f, 0.0f, 0.5f},
+    {1.0f, 0.0f, 0.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
     {0.0f, 0.0f, 1.0f, 0.0f},
     {0.0f, 0.0f, 0.0f, 1.0f}
@@ -43,18 +103,42 @@ GLuint program;
 
 void init(void)
 {
+    
+        for(int i = 0; i < 36; ++i)
+        {
+            colors[i] = ((float)rand()) / ((float)RAND_MAX) < 0.5f ? 0.0f : 1.0f;
+            printf("colors[%d] = %f\n",i,colors[i]);
+        };
+        for(int i = 0; i < 12; ++i)
+        {
+            for(int ii = 0; ii < 3; ++ii)
+            {
+                for(int iii = 0; iii < 3; ++iii)
+                {
+                    vertices[i][ii][iii] -= 0.5f;
+                    printf("%f,",vertices[i][ii][iii]);
+                }
+            printf(" ");
+            }
+        printf("\n");
+}
+            
+
 	// vertex buffer object, used for uploading the geometry
-	unsigned int vertexBufferObjID;
+	GLuint vertexBufferObjID;
+        GLuint colorBufferObjID;
 
 	dumpInfo();
 
 	// GL inits
 	glClearColor(0.2,0.2,0.5,0);
-	glDisable(GL_DEPTH_TEST);
+        glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_CULL_FACE);
 	printError("GL inits");
 
 	// Load and compile shader
-	program = loadShaders("lab1-3.vert", "lab1-3.frag");
+	program = loadShaders("lab1-5.vert", "lab1-5.frag");
 	printError("init shader");
 
 	// Upload geometry to the GPU:
@@ -64,13 +148,21 @@ void init(void)
 	glBindVertexArray(vertexArrayObjID);
 	// Allocate Vertex Buffer Objects
 	glGenBuffers(1, &vertexBufferObjID);
+        glGenBuffers(1, &colorBufferObjID);
 
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
-	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 12 * 3 * 3*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "in_Position"));
 	glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_TRUE, myMatrix);
+
+        // VBO for color data
+        glBindBuffer(GL_ARRAY_BUFFER, colorBufferObjID);
+        glBufferData(GL_ARRAY_BUFFER, 12 * 3 * sizeof(GLfloat), colors, GL_STATIC_DRAW);
+        GLuint colorLoc = glGetAttribLocation(program, "in_Color"); 
+        glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(colorLoc);
 
 
 	// End of upload of geometry
@@ -85,8 +177,6 @@ void update(void)
     GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
     GLfloat dt = new_t - t;
     t = new_t;
-
-    printf("FPS = %f\n", 1000.0f / dt);
 
     GLfloat tt = speed * t;
     myMatrix[0][0] = cos(tt);
@@ -103,10 +193,10 @@ void display(void)
         update();
 
 	// clear the screen
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glBindVertexArray(vertexArrayObjID);	// Select VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw object
+	glDrawArrays(GL_TRIANGLES, 0, 12 * 3 * 3);	// draw object
 
 	printError("display");
 
@@ -121,6 +211,7 @@ void OnTimer(int value)
 
 int main(int argc, char *argv[])
 {
+        printf("%s\n",__FILE__);
 	glutInit(&argc, argv);
 	glutInitContextVersion(3, 2);
 	glutCreateWindow ("GL3 white triangle example");

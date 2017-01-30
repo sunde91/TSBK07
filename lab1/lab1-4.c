@@ -15,18 +15,24 @@
 #include "GL_utilities.h"
 #include <math.h>
 
-// 3.1) 47.6 or 50 
+// 4.1) No
+// 4.2) same?
+// 4.3) Gouraud shading, could use phong instead
 
 // Globals
 // Data would normally be read from files
+
 GLfloat vertices[] =
 {
 	-0.5f,-0.5f,0.0f,
 	-0.5f,0.5f,0.0f,
 	0.5f,-0.5f,0.0f
 };
-
-
+GLfloat colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f   
+};
 
 GLfloat myMatrix[4][4] = {
     {1.0f, 0.0f, 0.0f, 0.5f},
@@ -43,8 +49,10 @@ GLuint program;
 
 void init(void)
 {
+
 	// vertex buffer object, used for uploading the geometry
-	unsigned int vertexBufferObjID;
+	GLuint vertexBufferObjID;
+        GLuint colorBufferObjID;
 
 	dumpInfo();
 
@@ -54,7 +62,7 @@ void init(void)
 	printError("GL inits");
 
 	// Load and compile shader
-	program = loadShaders("lab1-3.vert", "lab1-3.frag");
+	program = loadShaders("lab1-4.vert", "lab1-4.frag");
 	printError("init shader");
 
 	// Upload geometry to the GPU:
@@ -64,13 +72,21 @@ void init(void)
 	glBindVertexArray(vertexArrayObjID);
 	// Allocate Vertex Buffer Objects
 	glGenBuffers(1, &vertexBufferObjID);
+        glGenBuffers(1, &colorBufferObjID);
 
 	// VBO for vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
-	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 3*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "in_Position"));
 	glUniformMatrix4fv(glGetUniformLocation(program, "myMatrix"), 1, GL_TRUE, myMatrix);
+
+        // VBO for color data
+        glBindBuffer(GL_ARRAY_BUFFER, colorBufferObjID);
+        glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(GLfloat), colors, GL_STATIC_DRAW);
+        GLuint colorLoc = glGetAttribLocation(program, "in_Color"); 
+        glVertexAttribPointer(colorLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(colorLoc);
 
 
 	// End of upload of geometry
@@ -85,8 +101,6 @@ void update(void)
     GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
     GLfloat dt = new_t - t;
     t = new_t;
-
-    printf("FPS = %f\n", 1000.0f / dt);
 
     GLfloat tt = speed * t;
     myMatrix[0][0] = cos(tt);
@@ -121,6 +135,7 @@ void OnTimer(int value)
 
 int main(int argc, char *argv[])
 {
+        printf("%s\n",__FILE__);
 	glutInit(&argc, argv);
 	glutInitContextVersion(3, 2);
 	glutCreateWindow ("GL3 white triangle example");
