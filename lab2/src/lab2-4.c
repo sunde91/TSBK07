@@ -18,8 +18,10 @@
 #include <math.h>
 #include <stdlib.h>
 
-// 1.1) glTexParameter (set repeat, clamp etc.), or change in vertex shader
-// 1.2) special hardware
+// 4.1) If looking along v-direction, impossible. Otherwise, can't place camera position on vector v
+
+// 5.1) Light calculations are made in the fragment shader, phong shading was implemented
+// 5.2) gl_Position + color-vectors are 4-dimensional, rest are 3 dim
 
 // Globals
 // Data would normally be read from files
@@ -69,7 +71,6 @@ void init(void)
     glDisable(GL_DEPTH_TEST);
     printError("GL inits");
 
-
     // Load model
     model = LOAD_MODEL("various/bunnyplus.obj");
     
@@ -77,7 +78,7 @@ void init(void)
     LOAD_TEXTURE("maskros512", &tex);
 
     // Load and compile shader
-    program = LOAD_SHADERS("lab2-3");
+    program = LOAD_SHADERS("lab2-4");
     printError("init shader");
 
     glEnable(GL_DEPTH_TEST);
@@ -97,7 +98,7 @@ void init(void)
     transMat = T(0,0,-2);
     rotMat = IdentityMatrix();
     modelMatrix = Mult(transMat, rotMat);
-    cameraMatrix = lookAt(0,0,-2, 0,0,2, 0,1,0); // TODO
+    cameraMatrix = lookAt(0,0,0, 0,0,-1, 0,1,0); // TODO
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
     glBufferData(GL_ARRAY_BUFFER, 3 * model->numVertices * sizeof(GLfloat), model->vertexArray, GL_STATIC_DRAW);
