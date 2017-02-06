@@ -30,16 +30,27 @@
 #define LOAD_MODEL(NAME) LoadModel("models/" NAME)
 #define LOAD_TEXTURE(NAME, TEX) LoadTGATextureSimple("textures/" NAME ".tga", TEX)
 
+struct TransModel;
+struct TransModel {
+    Model * model;
+    mat4 trans;
+    struct TransModel * parent;
+};
+typedef struct TransModel TransModel;
 
+void createModel(char * modelName, TransModel * transModel) {
+    transModel->model = LoadModel(modelName);
+    transModel->trans = IdentityMatrix();
+    transModel->parent = NULL;
+}
 
+#define NUM_OBJS 5
 
-#define NUM_OBJS 2
-
-mat4 transMat[NUM_OBJS];
-mat4 rotMat;
-mat4 modelMatrix[NUM_OBJS];
+//mat4 transMat[NUM_OBJS];
+//mat4 rotMat;
+//mat4 modelMatrix[NUM_OBJS];
 mat4 cameraMatrix;
-GLuint tex[NUM_OBJS];
+//GLuint tex[NUM_OBJS];
 
 #define near 1.0
 #define far 30.0
@@ -58,11 +69,15 @@ unsigned int vertexArrayObjID[NUM_OBJS];
 // Reference to shader program
 GLuint program;
 
-Model * models[NUM_OBJS];
+TransModel objects[NUM_OBJS];
+
+float x,y,z,s;
 
 void init(void)
 {
 
+    x = y = z = 0.0f;
+    s = 1.0f;
     // vertex buffer object, used for uploading the geometry
     GLuint texBufferObjID;
 
@@ -73,18 +88,35 @@ void init(void)
     glDisable(GL_DEPTH_TEST);
     printError("GL inits");
 
-    // Load model
-    models[0] = LOAD_MODEL("various/bunnyplus.obj");
-    models[1] = LOAD_MODEL("various/cow.obj");// LOAD_MODEL("various/cow.obj");
-    // Load texture
-    LOAD_TEXTURE("rutor", &tex[0]);
-    LOAD_TEXTURE("dirt", &tex[1]);
+    createModel("models/windmill/blade.obj", &objects[0]);
+    createModel("models/windmill/blade.obj", &objects[1]);
+    createModel("models/windmill/blade.obj", &objects[2]);
+    createModel("models/windmill/blade.obj", &objects[3]);
+    createModel("models/windmill/windmill-walls.obj", &objects[4]);
 
-    printf("tex[0] = %d\n", tex[0]);
-    printf("tex[1] = %d\n", tex[1]);
+
+    int i;
+    // fix blades
+    for(i = 0; i < 4; ++i) {
+        objects[i].trans = Mult(T(0,1,0),Rx(i * M_PI / 2));
+        objects[i].parent = &objects[4];
+    }
+    // fix body
+    objects[4].trans = IdentityMatrix();
+    cameraMatrix = lookAt(0,0,-5, 0,0,-1, 0,1,0); // TODO
+
+    // Load model
+    //models[0] = LOAD_MODEL("various/bunnyplus.obj");
+    //models[1] = LOAD_MODEL("various/bunnyplus.obj");// LOAD_MODEL("various/cow.obj");
+    // Load texture
+    //LOAD_TEXTURE("rutor", &tex[0]);
+    //LOAD_TEXTURE("dirt", &tex[1]);
+
+    //printf("tex[0] = %d\n", tex[0]);
+    //printf("tex[1] = %d\n", tex[1]);
 
     // Load and compile shader
-    program = LOAD_SHADERS("lab2-7");
+    program = LOAD_SHADERS("lab3-1");
     printError("init shader");
 
     glEnable(GL_DEPTH_TEST);
@@ -95,14 +127,7 @@ void init(void)
     glGenVertexArrays(NUM_OBJS, &vertexArrayObjID);
 
     // VBO for vertex data
-    rotMat = IdentityMatrix();
-    transMat[0] = T(1,0,0);
-    transMat[1] = T(-1,0,0);
-    modelMatrix[0] = Mult(transMat[0], rotMat);
-    modelMatrix[1] = Mult(transMat[1], rotMat);
-    cameraMatrix = lookAt(0,0,-5, 0,0,-1, 0,1,0); // TODO
 
-    int i;
     for(i = 0; i < NUM_OBJS; ++i) {
 
         printf("on index = %d\n", i);
@@ -119,10 +144,10 @@ void init(void)
         glGenBuffers(1, &texBufferObjID);
 
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjID);
-        glBufferData(GL_ARRAY_BUFFER, 3 * models[i]->numVertices * sizeof(GLfloat), models[i]->vertexArray, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 3 * objects[i].model->numVertices * sizeof(GLfloat), objects[i].model->vertexArray, GL_STATIC_DRAW);
         glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(glGetAttribLocation(program, "in_Position"));
-        glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, modelMatrix[i].m);
+        glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, objects[i].trans.m);
         glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
         glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix);
 
@@ -130,23 +155,23 @@ void init(void)
 
         // VBO for index data
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObjID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, models[i]->numIndices * sizeof(GLuint), models[i]->indexArray, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, objects[i].model->numIndices * sizeof(GLuint), objects[i].model->indexArray, GL_STATIC_DRAW);
 
         printError("index");
 
            // VBO for normal data
         glBindBuffer(GL_ARRAY_BUFFER, normalBufferObjID); printError("0");
-        glBufferData(GL_ARRAY_BUFFER, 3 * models[i]->numVertices * sizeof(GLfloat), models[i]->normalArray, GL_STATIC_DRAW);  printError("1");
+        glBufferData(GL_ARRAY_BUFFER, 3 * objects[i].model->numVertices * sizeof(GLfloat), objects[i].model->normalArray, GL_STATIC_DRAW);  printError("1");
         glVertexAttribPointer(glGetAttribLocation(program, "in_Normal"), 3, GL_FLOAT, GL_FALSE, 0, 0); printError("2");
         glEnableVertexAttribArray(glGetAttribLocation(program, "in_Normal")); printError("3");
 
         printError("normal");
         // VBO vertex data
-        
-        if (models[i]->texCoordArray != NULL)
+        /*
+        if (objects[i].model->texCoordArray != NULL)
         {
             glBindBuffer(GL_ARRAY_BUFFER, texBufferObjID);
-            glBufferData(GL_ARRAY_BUFFER, models[i]->numVertices*2*sizeof(GLfloat), models[i]->texCoordArray, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, objects[i].model->numVertices*2*sizeof(GLfloat), objects[i].model->texCoordArray, GL_STATIC_DRAW);
             glVertexAttribPointer(glGetAttribLocation(program, "in_TexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
             glEnableVertexAttribArray(glGetAttribLocation(program, "in_TexCoord"));
         }
@@ -155,10 +180,11 @@ void init(void)
         }
         
         printError("tex");
+        */
     }
     // End of upload of geometry
 
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
 
     printError("init arrays");
 }
@@ -175,28 +201,43 @@ void update(int modelNum)
 
     angleX += speed;
     angleY += 2 * speed;
-    mat4 rotX = Rx(angleX);
-    mat4 rotY = Ry(angleY);
-    rotMat = Mult(rotX,rotY);
-    cameraMatrix = lookAt(5 * sin(angleX),2*sin(angleX*4),5 * cos(angleX), 0,0,0, 0,1,0); // TODO
+    cameraMatrix = lookAt(10 * sin(angleX),0, 10 * cos(angleX), 0,0,0, 0,1,0); // TODO
     glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
 
-    //modelMatrix[modelNum] = Mult(transMat[modelNum], rotMat);
-
+    mat4 transMat = objects[modelNum].trans;
+    if( objects[modelNum].parent != NULL ) {
+        transMat = Mult(objects[modelNum].parent->trans, transMat);
+    }
     glUniform1f(glGetUniformLocation(program, "time"), 0.001 * t);
-    glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, modelMatrix[modelNum].m);
+    glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, transMat.m);
+}
+
+void processEvents(){
+    if(glutKeyIsDown('x'))
+        scanf("%f", &x);
+    else if(glutKeyIsDown('y'))
+        scanf("%f", &y);
+    else if(glutKeyIsDown('z'))
+        scanf("%f", &z);
+    else if(glutKeyIsDown('s'))
+        scanf("%f",&s);
 }
 
 void display(void)
 {
     printError("pre display");
 
+    processEvents();
+    int i;
+    for(i = 0; i < 4; ++i) {
+        objects[i].trans = Mult(T(x,y,z),Rx(i * M_PI / 2));
+    }
+    objects[4].trans = S(s,s,s);
     // clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
 
-    int i;
     for(i = 0; i < NUM_OBJS; ++i) {
         glBindVertexArray(vertexArrayObjID[i]);	// Select VAO
         update(i);
@@ -207,11 +248,10 @@ void display(void)
             glActiveTexture(GL_TEXTURE1);
         */
          // Bind texture
-        glBindTexture(GL_TEXTURE_2D, tex[i]);
-        glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        //glDrawArrays(GL_TRIANGLES, 0, 3 * m->numVertices);	// draw object
-        glDrawElements(GL_TRIANGLES, models[i]->numIndices, GL_UNSIGNED_INT, 0L);
+        //glBindTexture(GL_TEXTURE_2D, tex[i]);
+        //glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glDrawElements(GL_TRIANGLES, objects[i].model->numIndices, GL_UNSIGNED_INT, 0L);
     }
     printError("display");
 
