@@ -53,7 +53,7 @@ mat4 cameraMatrix;
 //GLuint tex[NUM_OBJS];
 
 #define near 1.0
-#define far 30.0
+#define far 60.0
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -71,13 +71,16 @@ GLuint program;
 
 TransModel objects[NUM_OBJS];
 
-float x,y,z,s;
+char active_key = 's';
+float x,y,z,s,c;
 
 void init(void)
 {
 
     x = y = z = 0.0f;
     s = 1.0f;
+    c = 10.0f;
+
     // vertex buffer object, used for uploading the geometry
     GLuint texBufferObjID;
 
@@ -103,7 +106,7 @@ void init(void)
     }
     // fix body
     objects[4].trans = IdentityMatrix();
-    cameraMatrix = lookAt(0,0,-5, 0,0,-1, 0,1,0); // TODO
+    cameraMatrix = lookAt(0,0,-10, 0,0,-1, 0,1,0); // TODO
 
     // Load model
     //models[0] = LOAD_MODEL("various/bunnyplus.obj");
@@ -201,7 +204,7 @@ void update(int modelNum)
 
     angleX += speed;
     angleY += 2 * speed;
-    cameraMatrix = lookAt(10 * sin(angleX),0, 10 * cos(angleX), 0,0,0, 0,1,0); // TODO
+    cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,5,0, 0,1,0); // TODO
     glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
 
     mat4 transMat = objects[modelNum].trans;
@@ -214,13 +217,52 @@ void update(int modelNum)
 
 void processEvents(){
     if(glutKeyIsDown('x'))
-        scanf("%f", &x);
+        active_key =  'x';
     else if(glutKeyIsDown('y'))
-        scanf("%f", &y);
+        active_key =  'y';
     else if(glutKeyIsDown('z'))
-        scanf("%f", &z);
+        active_key =  'z';
     else if(glutKeyIsDown('s'))
-        scanf("%f",&s);
+        active_key =  's';
+    else if(glutKeyIsDown('c'))
+        active_key =  'c';
+    else if(glutKeyIsDown('+'))
+        switch(active_key){
+            case 'x': x += 0.1;
+                printf("x = %f\n", x);
+                break;
+            case 'y': y += 0.1;
+                printf("y = %f\n", y);
+                break;
+            case 'z': z += 0.1;
+                printf("z = %f\n", z);
+                break;
+            case 's': s += 0.025;
+                printf("s = %f\n", s); 
+                break;
+            case 'c': c += 0.25;
+                printf("c = %f\n", c); 
+                break; 
+        }
+    else if(glutKeyIsDown('-'))
+        switch(active_key){
+            case 'x': x -= 0.1;
+                printf("x = %f\n", x);
+                break;
+            case 'y': y -= 0.1;
+                printf("y = %f\n", y);
+                break;
+            case 'z': z -= 0.1;
+                printf("z = %f\n", z);
+                break;
+            case 's': s -= 0.025;
+                printf("s = %f\n", s); 
+                break;
+            case 'c': c -= 0.25;
+                printf("c = %f\n", c); 
+                break; 
+        }
+
 }
 
 void display(void)
@@ -230,9 +272,8 @@ void display(void)
     processEvents();
     int i;
     for(i = 0; i < 4; ++i) {
-        objects[i].trans = Mult(T(x,y,z),Rx(i * M_PI / 2));
+        objects[i].trans = Mult(T(x,y,z),Mult(S(s,s,s),Mult(Rx(angleX*2),Rx(i * M_PI / 2))));
     }
-    objects[4].trans = S(s,s,s);
     // clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
