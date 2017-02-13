@@ -604,6 +604,13 @@ void glutSetWindowTitle(char *title)
 	XStoreName(dpy, win, title);
 }
 
+void glutGetWindowSize(int * w, int * h) {
+    XWindowAttributes ra;
+    XGetWindowAttributes(dpy, win, &ra);
+    *w = ra.width;
+    *h = ra.height;
+}
+
 // Not complete full screen mode yet since the window frame and menu are not hidden yet
 
 char gFullScreen = 0;

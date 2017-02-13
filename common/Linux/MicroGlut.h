@@ -28,6 +28,7 @@ void glutSwapBuffers();
 
 #define GLUT_ELAPSED_TIME		(700)
 int glutGet(int type);
+void glutGetWindowSize(int * width, int * height);
 
 void glutInitDisplayMode(unsigned int mode);
 void glutIdleFunc(void (*func)(void));

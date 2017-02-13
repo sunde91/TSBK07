@@ -72,6 +72,14 @@ TransModel objects[NUM_OBJS];
 char active_key = 's';
 float x,y,z,s,c;
 
+float px, py;
+void mouseCallback(int mx, int my) {
+    int w,h;
+    glutGetWindowSize(&w, &h);
+    px = 2 * M_PI * mx / (float)w - M_PI;
+    py =  M_PI / 2 - M_PI * my / (float)h;
+}
+
 void init(void)
 {
 
@@ -117,7 +125,7 @@ void init(void)
     //printf("tex[1] = %d\n", tex[1]);
 
     // Load and compile shader
-    program = LOAD_SHADERS("lab3-1");
+    program = LOAD_SHADERS("lab3-2");
     printError("init shader");
 
     glEnable(GL_DEPTH_TEST);
@@ -187,6 +195,8 @@ void init(void)
 
     //glEnable(GL_TEXTURE_2D);
 
+    glutPassiveMotionFunc(mouseCallback);
+
     printError("init arrays");
 }
 
@@ -202,7 +212,11 @@ void update(int modelNum)
 
     angleX += speed;
     angleY += 2 * speed;
-    cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,5,0, 0,1,0); // TODO
+    //cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,5,0, 0,1,0); // TODO
+    float camX = c * cos(py) * cos(px);
+    float camZ = c * cos(py) * sin(px);
+    float camY  = c * sin(py);
+    cameraMatrix = lookAt(camX, camY, camZ, 0,5,0, 0,1,0);
     glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
 
     mat4 transMat = objects[modelNum].trans;
@@ -260,7 +274,6 @@ void processEvents(){
                 printf("c = %f\n", c); 
                 break; 
         }
-
 }
 
 void display(void)
