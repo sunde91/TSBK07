@@ -18,8 +18,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-// 1.1/2) Parent/Child-tree
-// 1.3) Create a minimal editor / change in shaders
+// 2.1) rotate around object
 
 // Globals
 // Data would normally be read from files
