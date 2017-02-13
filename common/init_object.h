@@ -6,6 +6,8 @@ void init_object(GLuint vertexArrayObjID, Model * model, GLuint program){
 
     // VBO for vertex data
 
+        glUseProgram(program);
+
         glBindVertexArray(vertexArrayObjID);
 
         GLuint vertexBufferObjID;
@@ -42,9 +44,13 @@ void init_object(GLuint vertexArrayObjID, Model * model, GLuint program){
         if (model->texCoordArray != NULL)
         {
             glBindBuffer(GL_ARRAY_BUFFER, texBufferObjID);
+            printError("1");
             glBufferData(GL_ARRAY_BUFFER, model->numVertices*2*sizeof(GLfloat), model->texCoordArray, GL_STATIC_DRAW);
+            printError("2");
             glVertexAttribPointer(glGetAttribLocation(program, "in_TexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+            printError("3");
             glEnableVertexAttribArray(glGetAttribLocation(program, "in_TexCoord"));
+            printError("4");
         }
         else {
             printf("no texture coordinates found\n");
