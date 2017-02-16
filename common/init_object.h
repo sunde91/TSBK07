@@ -1,6 +1,9 @@
+#ifndef __INIT_OBJECT__
+#define __INIT_OBJECT__
 
 #include "MicroGlut.h"
 #include "VectorUtils3.h"
+#include "loadobj.h"
 
 void init_object(GLuint vertexArrayObjID, Model * model, GLuint program){
 
@@ -57,3 +60,5 @@ void init_object(GLuint vertexArrayObjID, Model * model, GLuint program){
         }
         printError("tex");
 }
+
+#endif

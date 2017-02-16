@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "init_object.h"
+#include "cameramotion.h"
 
 // 3.1) 
 
@@ -45,6 +46,7 @@ void createModel(char * modelName, TransModel * transModel) {
 }
 
 mat4 cameraMatrix;
+Camera camera;
 
 #define near 1.0
 #define far 60.0
@@ -110,8 +112,20 @@ GLuint skyboxShader;
 vec4 skyboxOffset;
 mat4 skyboxCameraMatrix;
 
+void cameraCallback(unsigned char c, int x, int y)
+{
+    handleCameraEvent(&camera, c, x, y);
+}
+/*handleCameraEvent
+void mouseCallback(int x, int y) {
+    handleCameraEvents(camera, 'm', x, y);
+}
+*/
+
 void init(void)
 {
+
+    camera = newCamera();
 
     x = 3.8f;
     y = 9.0f;
@@ -162,6 +176,7 @@ void init(void)
     }
     // fix body
     objects[WINDMILL].trans = IdentityMatrix();
+
     cameraMatrix = lookAt(0,5,c, 0,0,0, 0,1,0); // TODO
 
     // Load and compile shader
@@ -201,6 +216,8 @@ void init(void)
     
     // End of upload of geometry
     //glEnable(GL_TEXTURE_2D);
+
+    glutKeyboardFunc(cameraCallback);
 
     printError("init arrays");
 }
@@ -261,19 +278,22 @@ void processEvents(){
 }
 
 
-void updateCamera() {
+void updateCameraStuff() {
     GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
     GLfloat dt = new_t - t;
     t = new_t;
 
     angleX += speed;
     angleY += 2 * speed;
-    cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
+
+    updateCamera(&camera);
+
+    //cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
     glUseProgram(program);
-    glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
+    glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.matrix.m);
 
     glUseProgram(skyboxShader);
-    skyboxCameraMatrix = cameraMatrix;
+    skyboxCameraMatrix = camera.matrix;
     skyboxCameraMatrix.m[3] = skyboxOffset.x;
     skyboxCameraMatrix.m[4 + 3] = skyboxOffset.y;
     skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
@@ -295,7 +315,8 @@ void display(void)
 {
     printError("pre display");
 
-    processEvents();
+    //processEvents();
+    //handleCameraEvents(&camera);
     int i;
     for(i = 0; i < 4; ++i) {
         objects[i].trans = Mult(T(x,y,z),Mult(S(s,s,s),Mult(Rx(angleX*2),Rx(i * M_PI / 2))));
@@ -305,7 +326,7 @@ void display(void)
 
     glActiveTexture(GL_TEXTURE0);
 
-    updateCamera();
+    updateCameraStuff();
 
     glUseProgram(skyboxShader);
     glBindVertexArray(vertexArrayObjID[SKYBOX]); // Select VAO
