@@ -45,7 +45,6 @@ void createModel(char * modelName, TransModel * transModel) {
     transModel->texObjID = -1;
 }
 
-mat4 cameraMatrix;
 Camera camera;
 
 #define near 1.0
@@ -71,15 +70,13 @@ enum OBJS {
     SKYBOX,
     NUM_OBJS
 };
+
 // vertex array object
 unsigned int vertexArrayObjID[NUM_OBJS];
 // Reference to shader program
 GLuint program;
 
 TransModel objects[NUM_OBJS-1];
-
-char active_key = 's';
-float x,y,z,s,c;
 
 Model groundPlaneModel;
 GLfloat vertexArray[] = {
@@ -143,28 +140,23 @@ void mouseCallback(int mx, int my) {
     mouseY = ((float)mouseY - hf) / hf;
 }
 
+float blade_x = 3.8f;
+float blade_y = 9.0f;
+float blade_z = 0.0f;
+float blade_s = 0.8f;
+
 void init(void)
 {
 
-    camera = newCamera();
-
-    x = 3.8f;
-    y = 9.0f;
-    z = 0.0f;
-    s = 0.8f;
-    c = 30.0f;
-
-    // vertex buffer object, used for uploading the geometry
-    GLuint texBufferObjID;
-
     dumpInfo();
+
+    camera = newCamera();
 
     // GL inits
     glClearColor(0.2,0.2,0.5,0);
-    //glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     printError("GL inits");
-
-
 
     createModel("models/windmill/blade.obj", &objects[BLADE1]);
     createModel("models/windmill/blade.obj", &objects[BLADE2]);
@@ -185,7 +177,6 @@ void init(void)
     groundPlane->model->texCoordArray = texCoordArray;
     LOAD_TEXTURE("dirt",&(groundPlane->texObjID));
 
-    //createModel("models/skybox.obj", &objects[SKYBOX]);
     skybox = LoadModel("models/skybox.obj");
     LOAD_TEXTURE("SkyBox512", &skyboxTexObjID);
 
@@ -198,45 +189,31 @@ void init(void)
     // fix body
     objects[WINDMILL].trans = IdentityMatrix();
 
-    cameraMatrix = lookAt(0,5,c, 0,0,0, 0,1,0); // TODO
-
     // Load and compile shader
     program = LOAD_SHADERS("lab3-3");
     skyboxShader = LOAD_SHADERS("skybox");
-    //rintf("program = %d, skybox = %d", program, skyboxShader);
     printError("init shader");
-
-    glEnable(GL_DEPTH_TEST);
-    // Upload geometry to the GPU:
 
     // Allocate and activate Vertex Array Object (VAO)
     glGenVertexArrays(NUM_OBJS, &vertexArrayObjID);
 
-    // VBO for vertex data
-
+    // VBO for vertex data 
+    glUseProgram(program);
     for(i = 0; i < SKYBOX; ++i) {
-        printf("on index = %d\n", i);
         init_object(vertexArrayObjID[i], objects[i].model, program);
     }
-    glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix);
 
     // skyboxshader
+    glUseProgram(skyboxShader);
     CenterModel(skybox);
     init_object(vertexArrayObjID[SKYBOX], skybox, skyboxShader);
-    glUseProgram(skyboxShader);
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projMatrix"), 1, GL_TRUE, projectionMatrix);
     skyboxOffset.x = 0;
     skyboxOffset.y = 0;
     skyboxOffset.z = 0;
-    skyboxCameraMatrix = cameraMatrix;
-    skyboxCameraMatrix.m[3] = skyboxOffset.x;
-    skyboxCameraMatrix.m[4 + 3] = skyboxOffset.y;
-    skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
+    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projMatrix"), 1, GL_TRUE, projectionMatrix);
 
     // End of upload of geometry
-    //glEnable(GL_TEXTURE_2D);
 
     glutKeyboardFunc(keyboardCallback);
     glutKeyboardUpFunc(keyboardCallbackRelease);
@@ -246,74 +223,15 @@ void init(void)
 }
 
 GLfloat t = 0;
-GLfloat speed = 0.002;
-float angleX = 0;
-float angleY = 0;
-
-void processEvents(){
-    if(glutKeyIsDown('x'))
-        active_key =  'x';
-    else if(glutKeyIsDown('y'))
-        active_key =  'y';
-    else if(glutKeyIsDown('z'))
-        active_key =  'z';
-    else if(glutKeyIsDown('s'))
-        active_key =  's';
-    else if(glutKeyIsDown('c'))
-        active_key =  'c';
-    else if(glutKeyIsDown('+'))
-        switch(active_key){
-            case 'x': x += 0.1;
-                      printf("x = %f\n", x);
-                      break;
-            case 'y': y += 0.1;
-                      printf("y = %f\n", y);
-                      break;
-            case 'z': z += 0.1;
-                      printf("z = %f\n", z);
-                      break;
-            case 's': s += 0.025;
-                      printf("s = %f\n", s); 
-                      break;
-            case 'c': c += 0.25;
-                      printf("c = %f\n", c); 
-                      break; 
-        }
-    else if(glutKeyIsDown('-'))
-        switch(active_key){
-            case 'x': x -= 0.1;
-                      printf("x = %f\n", x);
-                      break;
-            case 'y': y -= 0.1;
-                      printf("y = %f\n", y);
-                      break;
-            case 'z': z -= 0.1;
-                      printf("z = %f\n", z);
-                      break;
-            case 's': s -= 0.025;
-                      printf("s = %f\n", s); 
-                      break;
-            case 'c': c -= 0.25;
-                      printf("c = %f\n", c); 
-                      break; 
-        }
-
-}
-
-
 void updateCameraStuff() {
     GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
     GLfloat dt = new_t - t;
     t = new_t;
 
-    angleX += speed;
-    angleY += 2 * speed;
-
     cameraSetRotateVel(&camera, mouseY, mouseX);
     cameraSetMoveVel(&camera, moveX, 0, moveZ);
     updateCamera(&camera);
 
-    //cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
     glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.matrix.m);
 
@@ -336,16 +254,23 @@ void update(int modelNum)
     glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, transMat.m);
 }
 
+float blade_angle = 0;
+float blade_speed = 0.01f;
+void updateWindmill()
+{
+    blade_angle += blade_speed;
+    int i;
+    for(i = 0; i <= BLADE4; ++i) {
+        objects[i].trans = Mult(T(blade_x,blade_y,blade_z),Mult(S(blade_s,blade_s,blade_s),Mult(Rx(blade_angle*2),Rx(i * M_PI / 2))));
+    }
+}
+
 void display(void)
 {
     printError("pre display");
 
-    //processEvents();
-    //handleCameraEvents(&camera);
-    int i;
-    for(i = 0; i < 4; ++i) {
-        objects[i].trans = Mult(T(x,y,z),Mult(S(s,s,s),Mult(Rx(angleX*2),Rx(i * M_PI / 2))));
-    }
+    updateWindmill();
+
     // clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -361,7 +286,8 @@ void display(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glDrawElements(GL_TRIANGLES, skybox->numIndices, GL_UNSIGNED_INT, 0L);
 
-
+    
+    int i;
     if(1)
     {
         glClear(GL_DEPTH_BUFFER_BIT);
