@@ -1104,6 +1104,13 @@ void glutSetWindowTitle(char *title)
 	[window setTitle: [NSString stringWithUTF8String: title]];
 }
 
+void glutGetWindowSize(int * w, int * h) {
+ 
+
+    *w = glutGet(GLUT_WINDOW_WIDTH); 
+    *h = glutGet(GLUT_WINDOW_HEIGHT);
+}
+
 char glutKeyIsDown(unsigned char c)
 {
 	return gKeymap[(unsigned int)c];

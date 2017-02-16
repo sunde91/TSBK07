@@ -46,6 +46,7 @@ void glutSwapBuffers();
 #define GLUT_SCREEN_WIDTH GLUT_WINDOW_WIDTH
 #define GLUT_SCREEN_HEIGHT GLUT_WINDOW_HEIGHT
 int glutGet(int type);
+void glutGetWindowSize(int * width, int * height);
 
 void glutInitDisplayMode(unsigned int mode);
 void glutIdleFunc(void (*func)(void));
