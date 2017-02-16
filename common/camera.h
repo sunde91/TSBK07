@@ -66,7 +66,6 @@ void cameraSetRotateVel(Camera * camera, GLfloat v_pitch, GLfloat v_yaw)
 {
     v_pitch *= camera->rotSpeed;
     v_yaw *= camera->rotSpeed; 
-    printf("v_pitch = %f\n",v_pitch);
     if( fabs(v_pitch) > camera->rotThresh )
         camera->pitchSpeed = v_pitch;
     else
