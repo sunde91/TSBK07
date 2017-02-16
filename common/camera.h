@@ -27,7 +27,7 @@ Camera newCamera(void)
     //camera.matrix = lookAtv(camera.pos, camera.dir, camera.up);
     camera.pitch = 0;
     camera.yaw = 0;
-    camera.rotSpeed = 0.1f;
+    camera.rotSpeed = 0.05f;
     camera.rotThresh = 0.01f;
     camera.matrix = IdentityMatrix();
     //camera.rot = IdentityMatrix();
@@ -65,8 +65,12 @@ void updateCamera(Camera * camera)
 void cameraSetRotateVel(Camera * camera, GLfloat v_pitch, GLfloat v_yaw)
 {
     v_pitch *= camera->rotSpeed;
-    v_yaw *= camera->rotSpeed; 
-    if( fabs(v_pitch) > camera->rotThresh )
+    v_yaw *= camera->rotSpeed;
+    if(v_pitch < 0 && camera->pitch <= (-M_PI/2+0.05)) 
+        camera->pitchSpeed = 0;
+    else if(v_pitch > 0 && camera->pitch >= (M_PI/2+0.05)) 
+        camera->pitchSpeed = 0;
+    else if( fabs(v_pitch) > camera->rotThresh )
         camera->pitchSpeed = v_pitch;
     else
         camera->pitchSpeed = 0;
@@ -85,7 +89,7 @@ void cameraSetMoveVel(Camera * camera, GLfloat vx, GLfloat vy, GLfloat vz)
     vec4 moveVecLocal = vec3tovec4(SetVector(vx,vy,vz));
     mat4 baseMat = Transpose(matFromAngles(camera->pitch, camera->yaw));
     vec4 moveVecGlobal = MultVec4(baseMat, moveVecLocal);
-    moveVecGlobal.y = 0; // inte flyga
+    //moveVecGlobal.y = 0; // inte flyga
     camera->vel = vec4tovec3(moveVecGlobal);
 }
 

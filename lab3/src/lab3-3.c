@@ -48,7 +48,7 @@ void createModel(char * modelName, TransModel * transModel) {
 Camera camera;
 
 #define near 1.0
-#define far 60.0
+#define far 180.0
 #define right 0.5
 #define left -0.5
 #define top 0.5
@@ -175,7 +175,7 @@ void init(void)
     groundPlane->model->numVertices = 4;
     groundPlane->model->numIndices = 6;
     groundPlane->model->texCoordArray = texCoordArray;
-    LOAD_TEXTURE("dirt",&(groundPlane->texObjID));
+    LOAD_TEXTURE("grass",&(groundPlane->texObjID));
 
     skybox = LoadModel("models/skybox.obj");
     LOAD_TEXTURE("SkyBox512", &skyboxTexObjID);
