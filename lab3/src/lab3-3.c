@@ -107,6 +107,8 @@ GLuint indexArray[] = {
 Model * skybox;
 GLuint skyboxTexObjID;
 GLuint skyboxShader;
+vec4 skyboxOffset;
+mat4 skyboxCameraMatrix;
 
 void init(void)
 {
@@ -188,9 +190,14 @@ void init(void)
     init_object(vertexArrayObjID[SKYBOX], skybox, skyboxShader);
     glUseProgram(skyboxShader);
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projMatrix"), 1, GL_TRUE, projectionMatrix);
+    skyboxOffset.x = 0;
+    skyboxOffset.y = 0;
+    skyboxOffset.z = 0;
+    skyboxCameraMatrix = cameraMatrix;
+    skyboxCameraMatrix.m[3] = skyboxOffset.x;
+    skyboxCameraMatrix.m[4 + 3] = skyboxOffset.y;
+    skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
-    mat4 idmat = IdentityMatrix();
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "modelMatrix"), 1, GL_TRUE, idmat.m);
     
     // End of upload of geometry
     //glEnable(GL_TEXTURE_2D);
@@ -202,27 +209,6 @@ GLfloat t = 0;
 GLfloat speed = 0.002;
 float angleX = 0;
 float angleY = 0;
-
-void updateCamera() {
-    GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
-    GLfloat dt = new_t - t;
-    t = new_t;
-
-    angleX += speed;
-    angleY += 2 * speed;
-    cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
-    glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
-}
-
-void update(int modelNum)
-{      
-    mat4 transMat = objects[modelNum].trans;
-    if( objects[modelNum].parent != NULL ) {
-        transMat = Mult(objects[modelNum].parent->trans, transMat);
-    }
-    glUniform1f(glGetUniformLocation(program, "time"), 0.001 * t);
-    glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, transMat.m);
-}
 
 void processEvents(){
     if(glutKeyIsDown('x'))
@@ -274,6 +260,37 @@ void processEvents(){
 
 }
 
+
+void updateCamera() {
+    GLfloat new_t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
+    GLfloat dt = new_t - t;
+    t = new_t;
+
+    angleX += speed;
+    angleY += 2 * speed;
+    cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
+    glUseProgram(program);
+    glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
+
+    glUseProgram(skyboxShader);
+    skyboxCameraMatrix = cameraMatrix;
+    skyboxCameraMatrix.m[3] = skyboxOffset.x;
+    skyboxCameraMatrix.m[4 + 3] = skyboxOffset.y;
+    skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
+    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, skyboxCameraMatrix.m);
+
+}
+
+void update(int modelNum)
+{      
+    mat4 transMat = objects[modelNum].trans;
+    if( objects[modelNum].parent != NULL ) {
+        transMat = Mult(objects[modelNum].parent->trans, transMat);
+    }
+    glUniform1f(glGetUniformLocation(program, "time"), 0.001 * t);
+    glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, transMat.m);
+}
+
 void display(void)
 {
     printError("pre display");
@@ -290,14 +307,8 @@ void display(void)
 
     updateCamera();
 
-    glBindVertexArray(vertexArrayObjID[SKYBOX]); // Select VAO
-
     glUseProgram(skyboxShader);
-    mat4 idmat = IdentityMatrix();
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, idmat.m);
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "modelMatrix"), 1, GL_TRUE, idmat.m);
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projMatrix"), 1, GL_TRUE, projectionMatrix);
-
+    glBindVertexArray(vertexArrayObjID[SKYBOX]); // Select VAO
     glBindTexture(GL_TEXTURE_2D, skyboxTexObjID);
     glUniform1i(glGetUniformLocation(skyboxShader, "texUnit"), 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -312,7 +323,7 @@ void display(void)
     for(i = 0; i < SKYBOX; ++i) {
         glBindVertexArray(vertexArrayObjID[i]);	// Select VAO
         update(i);
-        printf("texture[%d] = %d\n",i,objects[i].texObjID);
+        //printf("texture[%d] = %d\n",i,objects[i].texObjID);
         /*
         if( i == 0 )
             glActiveTexture(GL_TEXTURE0);
