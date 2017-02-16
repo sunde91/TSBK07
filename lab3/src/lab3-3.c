@@ -18,7 +18,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "init_object.h"
-#include "cameramotion.h"
+#include "camera.h"
 
 // 3.1) 
 
