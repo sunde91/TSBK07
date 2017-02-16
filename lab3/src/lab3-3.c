@@ -55,10 +55,10 @@ Camera camera;
 #define top 0.5
 #define bottom -0.5
 GLfloat projectionMatrix[] = {
-2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
-0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
-0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
-0.0f, 0.0f, -1.0f, 0.0f };
+    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
+    0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
+    0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
+    0.0f, 0.0f, -1.0f, 0.0f };
 
 //#define NUM_OBJS 7
 enum OBJS {
@@ -83,28 +83,28 @@ float x,y,z,s,c;
 
 Model groundPlaneModel;
 GLfloat vertexArray[] = {
-        -far,0,-far,
-        -far,0,far,
-        far,0,far,
-        far,0,-far
-        };
+    -far,0,-far,
+    -far,0,far,
+    far,0,far,
+    far,0,-far
+};
 GLfloat normalArray[] = {
-        0,1,0,
-        0,1,0,
-        0,1,0,
-        0,1,0
-    };
+    0,1,0,
+    0,1,0,
+    0,1,0,
+    0,1,0
+};
 GLuint indexArray[] = {
-        0,1,2,
-        0,2,3
-    };
+    0,1,2,
+    0,2,3
+};
 
-    GLfloat texCoordArray[] = {
-        0,0,
-        0,1,
-        1,1,
-        1,0   
-    };
+GLfloat texCoordArray[] = {
+    0,0,
+    0,1,
+    1,1,
+    1,0   
+};
 
 Model * skybox;
 GLuint skyboxTexObjID;
@@ -112,15 +112,36 @@ GLuint skyboxShader;
 vec4 skyboxOffset;
 mat4 skyboxCameraMatrix;
 
-void cameraCallback(unsigned char c, int x, int y)
+float mouseX, mouseY;
+float moveZ, moveX;
+void updateKey(unsigned char event, int up)
+{ 
+    switch(event)
+    {
+        case 'w': moveZ = up ? 0 : -1; break;
+        case 'a': moveX = up ? 0 : -1; break; 
+        case 's': moveZ = up ? 0 : 1; break;
+        case 'd': moveX = up ? 0 : 1; break; 
+    }
+}
+void keyboardCallback(unsigned char event, int x, int y)
 {
-    handleCameraEvent(&camera, c, x, y);
+    updateKey(event, 0);
 }
-/*handleCameraEvent
-void mouseCallback(int x, int y) {
-    handleCameraEvents(camera, 'm', x, y);
+void keyboardCallbackRelease(unsigned char event, int x, int y)
+{
+    updateKey(event, 1);
 }
-*/
+void mouseCallback(int mx, int my) {
+    mouseX = mx;
+    mouseY = my;
+    int w,h;
+    glutGetWindowSize(&w, &h);
+    float wf = ((float)w) / 2.0f;
+    float hf = ((float)h) / 2.0f;
+    mouseX = ((float)mouseX - wf) / wf;
+    mouseY = ((float)mouseY - hf) / hf;
+}
 
 void init(void)
 {
@@ -150,7 +171,7 @@ void init(void)
     createModel("models/windmill/blade.obj", &objects[BLADE3]);
     createModel("models/windmill/blade.obj", &objects[BLADE4]);
     createModel("models/windmill/windmill-walls.obj", &objects[WINDMILL]);
-    
+
     groundPlaneModel.vertexArray = vertexArray;
     groundPlaneModel.normalArray = normalArray;
     groundPlaneModel.indexArray = indexArray;
@@ -164,7 +185,7 @@ void init(void)
     groundPlane->model->texCoordArray = texCoordArray;
     LOAD_TEXTURE("dirt",&(groundPlane->texObjID));
 
-        //createModel("models/skybox.obj", &objects[SKYBOX]);
+    //createModel("models/skybox.obj", &objects[SKYBOX]);
     skybox = LoadModel("models/skybox.obj");
     LOAD_TEXTURE("SkyBox512", &skyboxTexObjID);
 
@@ -213,11 +234,13 @@ void init(void)
     skyboxCameraMatrix.m[4 + 3] = skyboxOffset.y;
     skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, cameraMatrix.m);
-    
+
     // End of upload of geometry
     //glEnable(GL_TEXTURE_2D);
 
-    glutKeyboardFunc(cameraCallback);
+    glutKeyboardFunc(keyboardCallback);
+    glutKeyboardUpFunc(keyboardCallbackRelease);
+    glutPassiveMotionFunc(mouseCallback);
 
     printError("init arrays");
 }
@@ -241,38 +264,38 @@ void processEvents(){
     else if(glutKeyIsDown('+'))
         switch(active_key){
             case 'x': x += 0.1;
-                printf("x = %f\n", x);
-                break;
+                      printf("x = %f\n", x);
+                      break;
             case 'y': y += 0.1;
-                printf("y = %f\n", y);
-                break;
+                      printf("y = %f\n", y);
+                      break;
             case 'z': z += 0.1;
-                printf("z = %f\n", z);
-                break;
+                      printf("z = %f\n", z);
+                      break;
             case 's': s += 0.025;
-                printf("s = %f\n", s); 
-                break;
+                      printf("s = %f\n", s); 
+                      break;
             case 'c': c += 0.25;
-                printf("c = %f\n", c); 
-                break; 
+                      printf("c = %f\n", c); 
+                      break; 
         }
     else if(glutKeyIsDown('-'))
         switch(active_key){
             case 'x': x -= 0.1;
-                printf("x = %f\n", x);
-                break;
+                      printf("x = %f\n", x);
+                      break;
             case 'y': y -= 0.1;
-                printf("y = %f\n", y);
-                break;
+                      printf("y = %f\n", y);
+                      break;
             case 'z': z -= 0.1;
-                printf("z = %f\n", z);
-                break;
+                      printf("z = %f\n", z);
+                      break;
             case 's': s -= 0.025;
-                printf("s = %f\n", s); 
-                break;
+                      printf("s = %f\n", s); 
+                      break;
             case 'c': c -= 0.25;
-                printf("c = %f\n", c); 
-                break; 
+                      printf("c = %f\n", c); 
+                      break; 
         }
 
 }
@@ -286,6 +309,8 @@ void updateCameraStuff() {
     angleX += speed;
     angleY += 2 * speed;
 
+    cameraSetRotateVel(&camera, mouseY, mouseX);
+    cameraSetMoveVel(&camera, moveX, 0, moveZ);
     updateCamera(&camera);
 
     //cameraMatrix = lookAt(c * sin(angleX),5, c * cos(angleX), 0,0,0, 0,1,0); // TODO
@@ -336,33 +361,33 @@ void display(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glDrawElements(GL_TRIANGLES, skybox->numIndices, GL_UNSIGNED_INT, 0L);
 
-   
+
     if(1)
     {
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glUseProgram(program);
-    for(i = 0; i < SKYBOX; ++i) {
-        glBindVertexArray(vertexArrayObjID[i]);	// Select VAO
-        update(i);
-        //printf("texture[%d] = %d\n",i,objects[i].texObjID);
-        /*
-        if( i == 0 )
-            glActiveTexture(GL_TEXTURE0);
-        else
-            glActiveTexture(GL_TEXTURE1);
-        */
-         // Bind texture
-        //glBindTexture(GL_TEXTURE_2D, tex[i]);
-        //glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        if( objects[i].texObjID != -1 ) {
-            glBindTexture(GL_TEXTURE_2D, objects[i].texObjID);
-            glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program);
+        for(i = 0; i < SKYBOX; ++i) {
+            glBindVertexArray(vertexArrayObjID[i]);	// Select VAO
+            update(i);
+            //printf("texture[%d] = %d\n",i,objects[i].texObjID);
+            /*
+               if( i == 0 )
+               glActiveTexture(GL_TEXTURE0);
+               else
+               glActiveTexture(GL_TEXTURE1);
+               */
+            // Bind texture
+            //glBindTexture(GL_TEXTURE_2D, tex[i]);
+            //glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            if( objects[i].texObjID != -1 ) {
+                glBindTexture(GL_TEXTURE_2D, objects[i].texObjID);
+                glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            }
+            glDrawElements(GL_TRIANGLES, objects[i].model->numIndices, GL_UNSIGNED_INT, 0L);
         }
-        glDrawElements(GL_TRIANGLES, objects[i].model->numIndices, GL_UNSIGNED_INT, 0L);
     }
-}
     printError("display");
 
     glutSwapBuffers();
