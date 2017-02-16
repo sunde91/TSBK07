@@ -22,12 +22,14 @@
 
 // 3.1) 
 
-// Globals
-// Data would normally be read from files
+// Defs 
 
 #define LOAD_SHADERS(NAME) loadShaders("shaders/" NAME ".vert",  "shaders/" NAME ".frag")
 #define LOAD_MODEL(NAME) LoadModel("models/" NAME)
 #define LOAD_TEXTURE(NAME, TEX) LoadTGATextureSimple("textures/" NAME ".tga", TEX)
+
+//#define SET_PARAM(PROGRAM, TYPE, NUM, PARAM) \
+    glUniform ## TYPE ## (glGetUniformLocation(PROGRAM, #PARAM), NUM, GL_TRUE, PARAM);
 
 struct TransModel;
 struct TransModel {
@@ -45,6 +47,12 @@ void createModel(char * modelName, TransModel * transModel) {
     transModel->texObjID = -1;
 }
 
+
+// Globals
+#define NUM_LIGHTS 1
+Point3D lightPosDir[NUM_LIGHTS] = { {0,5,10} };
+Vector3f lightColor[NUM_LIGHTS] = { {0.5f, 0.8f, 1.0f} };
+GLint lightIsDir[NUM_LIGHTS] = { 0 };
 Camera camera;
 
 #define near 1.0
@@ -158,6 +166,21 @@ void init(void)
     glEnable(GL_TEXTURE_2D);
     printError("GL inits");
 
+    // Load and compile shader
+    program = LOAD_SHADERS("lab3-4");
+    skyboxShader = LOAD_SHADERS("skybox");
+    printError("init shader");
+
+    // Init lights
+    glUseProgram(program);
+    glUniform3fv(glGetUniformLocation(program, "lightPosDir"),
+            NUM_LIGHTS, &lightPosDir[0].x);
+    glUniform3fv(glGetUniformLocation(program, "lightColor"),
+            NUM_LIGHTS, &lightColor[0].x);
+    glUniform1iv(glGetUniformLocation(program, "lightIsDir"),
+            NUM_LIGHTS, &lightIsDir);
+    // Create models
+
     createModel("models/windmill/blade.obj", &objects[BLADE1]);
     createModel("models/windmill/blade.obj", &objects[BLADE2]);
     createModel("models/windmill/blade.obj", &objects[BLADE3]);
@@ -188,11 +211,6 @@ void init(void)
     }
     // fix body
     objects[WINDMILL].trans = IdentityMatrix();
-
-    // Load and compile shader
-    program = LOAD_SHADERS("lab3-4");
-    skyboxShader = LOAD_SHADERS("skybox");
-    printError("init shader");
 
     // Allocate and activate Vertex Array Object (VAO)
     glGenVertexArrays(NUM_OBJS, &vertexArrayObjID);
@@ -248,7 +266,7 @@ void updateCameraStuff() {
     skyboxCameraMatrix.m[8 + 3] = skyboxOffset.z;
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "cameraMatrix"), 1, GL_TRUE, skyboxCameraMatrix.m);
 
-    printError("updateCameraStuff");
+    //printError("updateCameraStuff");
 }
 
 void useModelTransform(int i)
@@ -262,10 +280,13 @@ void useModelTransform(int i)
     mat3 normalMatrix = mat4tomat3(modelViewMatrix);
     
     glUniformMatrix4fv(glGetUniformLocation(program, "modelMatrix"), 1, GL_TRUE, transMat.m);
+    //printError("1");
     glUniformMatrix4fv(glGetUniformLocation(program, "modelViewMatrix"), 1, GL_TRUE, modelViewMatrix.m);
+    //printError("2");
     glUniformMatrix3fv(glGetUniformLocation(program, "normalMatrix"), 1, GL_TRUE, normalMatrix.m);
+    //printError("3");
     
-    printError("useModelTransform");
+    //printError("useModelTransform");
 }
 
 float blade_angle = 0;
