@@ -38,7 +38,7 @@ void main(void)
             lightSource = vec3(lightView / lightView.w);
             vec3 posDiff = lightSource - var_Pos;
             lightStrength = sqrt(100.0 / dot(posDiff, posDiff));
-            lightSource = normalize(lightSource);
+            lightSource = normalize(posDiff);
         }
 
         vec3 reflection = 2 * dot(normal, lightSource) * normal - lightSource;
