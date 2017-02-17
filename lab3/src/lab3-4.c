@@ -49,10 +49,25 @@ void createModel(char * modelName, TransModel * transModel) {
 
 
 // Globals
-#define NUM_LIGHTS 1
-Point3D lightPosDir[NUM_LIGHTS] = { {0,5,10} };
-Vector3f lightColor[NUM_LIGHTS] = { {0.5f, 0.8f, 1.0f} };
-GLint lightIsDir[NUM_LIGHTS] = { 0 };
+#define NUM_LIGHTS 4
+Point3D lightPosDir[NUM_LIGHTS] = { 
+    {0,5,10},
+    {10,5,0},
+    {0,5,-10},
+    {-10,5,0}
+};
+Vector3f lightColor[NUM_LIGHTS] = {
+    {0.5f, 0.8f, 1.0f},
+    {1.0f, 0.8f, 0.5f},
+    {0.8f, 1.0f, 0.5f},
+    {0.8f, 0.5f, 1.0f}
+};
+GLint lightIsDir[NUM_LIGHTS] = {
+    0,
+    0,
+    0,
+    0
+};
 Camera camera;
 
 #define near 1.0
