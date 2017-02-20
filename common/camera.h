@@ -60,6 +60,8 @@ void updateCamera(Camera * camera)
     mat4 R = matFromAngles(camera->pitch, camera->yaw);
     mat4 n = T( - camera->pos.x, - camera->pos.y, - camera->pos.z); // obs : negative
     camera->matrix = Mult(R, MatrixAdd(IdentityMatrix(), n));
+    vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
+    printf("dir = %f,%f,%f\n", dir.x, dir.y, dir.z);
 }
 
 void cameraSetRotateVel(Camera * camera, GLfloat v_pitch, GLfloat v_yaw)
@@ -89,7 +91,7 @@ void cameraSetMoveVel(Camera * camera, GLfloat vx, GLfloat vy, GLfloat vz)
     vec4 moveVecLocal = vec3tovec4(SetVector(vx,vy,vz));
     mat4 baseMat = Transpose(matFromAngles(camera->pitch, camera->yaw));
     vec4 moveVecGlobal = MultVec4(baseMat, moveVecLocal);
-    //moveVecGlobal.y = 0; // inte flyga
+    moveVecGlobal.y = 0; // inte flyga
     camera->vel = vec4tovec3(moveVecGlobal);
 }
 

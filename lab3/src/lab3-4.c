@@ -49,24 +49,27 @@ void createModel(char * modelName, TransModel * transModel) {
 
 
 // Globals
-#define NUM_LIGHTS 4
+#define NUM_LIGHTS 5
 Point3D lightPosDir[NUM_LIGHTS] = { 
     {0,5,10},
     {10,5,0},
     {0,5,-10},
-    {-10,5,0}
+    {-10,5,0},
+    {-0.765939,-0.471729,-0.436817}
 };
 Vector3f lightColor[NUM_LIGHTS] = {
     {0.5f, 0.8f, 1.0f},
     {1.0f, 0.8f, 0.5f},
     {0.8f, 1.0f, 0.5f},
-    {0.8f, 0.5f, 1.0f}
+    {0.8f, 0.5f, 1.0f},
+    {1.0f, 1.0f, 1.0f}
 };
 GLint lightIsDir[NUM_LIGHTS] = {
     0,
     0,
     0,
-    0
+    0,
+    1
 };
 Camera camera;
 
