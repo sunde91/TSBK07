@@ -34,13 +34,6 @@ Camera newCamera(void)
     return camera;
 }
 
-vec3 vecFromAngles(GLfloat pitch, GLfloat yaw)
-{
-    GLfloat z = -cos(pitch) * cos(yaw);
-    GLfloat x = -cos(pitch) * sin(yaw);
-    GLfloat y = -sin(pitch);
-    return SetVector(x,y,z);
-}
 
 mat4 matFromAngles(GLfloat pitch, GLfloat yaw)
 {
@@ -49,6 +42,29 @@ mat4 matFromAngles(GLfloat pitch, GLfloat yaw)
     mat4 rot = Mult(rotx, roty);
     return rot; 
 }
+
+// Does not work?
+vec3 vecFromAngles(GLfloat pitch, GLfloat yaw)
+{
+    //GLfloat z = -cos(pitch) * cos(yaw);
+    //GLfloat x = -cos(pitch) * sin(yaw);
+    //GLfloat y = -sin(pitch);
+    mat4 R = matFromAngles(pitch, yaw);
+    vec4 v0;
+    v0.x = 0; v0.y = 0; v0.z = -1; v0.w = 1;
+    vec4 v1 = MultVec4(R,v0);
+    v1.x /= v1.w;
+    v1.y /= v1.w;
+    v1.z /= v1.w;
+    return vec4tovec3(v1);
+}
+
+void cameraLookAt(Camera * cam, vec3 dir)
+{
+    vec3 at = ScalarMult(dir, 10000);
+    cam->matrix = lookAtv(cam->pos, at, SetVector(0,1,0));
+}
+
 
 void updateCamera(Camera * camera) 
 {
@@ -61,7 +77,8 @@ void updateCamera(Camera * camera)
     mat4 n = T( - camera->pos.x, - camera->pos.y, - camera->pos.z); // obs : negative
     camera->matrix = Mult(R, MatrixAdd(IdentityMatrix(), n));
     vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
-    printf("dir = %f,%f,%f\n", dir.x, dir.y, dir.z);
+    //printf("dir = %f,%f,%f\n", -dir.x, -dir.y, -dir.z);
+    //printf("pitch = %f, yaw = %f\n", camera->pitch, camera->yaw);
 }
 
 void cameraSetRotateVel(Camera * camera, GLfloat v_pitch, GLfloat v_yaw)

@@ -16,7 +16,7 @@ INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
 SRC_DIR = src
 COMPILE = gcc -w
 
-PROGRAMS = lab3-1 lab3-2 lab3-3 lab3-4 
+PROGRAMS = lab3-1 lab3-2 lab3-3 lab3-4 lab3-5
 all : $(PROGRAMS)
 
 lab3-1 : $(SRC_DIR)/lab3-1.c $(DEPS)
@@ -26,6 +26,8 @@ lab3-2 : $(SRC_DIR)/lab3-2.c $(DEPS)
 lab3-3 : $(SRC_DIR)/lab3-3.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 lab3-4 : $(SRC_DIR)/lab3-4.c $(DEPS)
+	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
+lab3-5 : $(SRC_DIR)/lab3-5.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 .PHONY: clean
