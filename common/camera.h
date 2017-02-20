@@ -36,9 +36,9 @@ Camera newCamera(void)
 
 vec3 vecFromAngles(GLfloat pitch, GLfloat yaw)
 {
-    GLfloat z = - cos(pitch) * cos(yaw);
-    GLfloat x = cos(pitch) * sin(yaw);
-    GLfloat y = sin(pitch);
+    GLfloat z = -cos(pitch) * cos(yaw);
+    GLfloat x = -cos(pitch) * sin(yaw);
+    GLfloat y = -sin(pitch);
     return SetVector(x,y,z);
 }
 
