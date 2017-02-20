@@ -7,7 +7,7 @@ in vec3 var_Pos;
 uniform sampler2D texUnit;
 uniform mat4 cameraMatrix;
 
-#define NUM_LIGHTS 5
+#define NUM_LIGHTS 1
 uniform vec3 lightPosDir[NUM_LIGHTS];
 uniform vec3 lightColor[NUM_LIGHTS];
 uniform bool lightIsDir[NUM_LIGHTS];
@@ -17,7 +17,7 @@ out vec4 out_Color;
 void main(void)
 {
     const float k_d = 0.1;
-    const float k_s = 0;
+    const float k_s = 0.1;
     const vec3 view = vec3(0,0,1);
     const float shadeAmbient = 0.25;
 
@@ -43,9 +43,10 @@ void main(void)
             lightSource = normalize(posDiff);
         }
 
+        vec3 v_Pos = - normalize(var_Pos);
         vec3 reflection = 2 * dot(normal, lightSource) * normal - lightSource;
         float shadeDiffuse = clamp(dot(normal, lightSource), 0, 1);
-        float shadeSpec = pow(clamp(dot(view, reflection), 0, 1), 100.0);
+        float shadeSpec = pow(clamp(dot(v_Pos, reflection), 0, 1), 10.0);
 
         float shade = k_d * shadeDiffuse + k_s * shadeSpec;
         shade = lightStrength * shade;
