@@ -49,32 +49,34 @@ void createModel(char * modelName, TransModel * transModel) {
 
 
 // Globals
-#define NUM_LIGHTS 1
+#define NUM_LIGHTS 4
 Point3D lightPosDir[NUM_LIGHTS] = { 
-/*    {0,5,10},
-    {10,5,0},
-    {0,5,-10},
-    {-10,5,0},
-*/
+    {0,5,5},
+    {5,5,0},
+    {-5,5,0},
+    //{-10,5,0},
     //{0.528247,0.803410,-0.274750}
     {-10,7,-6}
 //    {0.593813,0.750454,0.290181}
 //    {-0.765939,-0.471729,-0.436817}
 };
 Vector3f lightColor[NUM_LIGHTS] = {
- /*   {0.5f, 0.8f, 1.0f},
+    /*{0.5f, 0.8f, 1.0f},
     {1.0f, 0.8f, 0.5f},
     {0.8f, 1.0f, 0.5f},
     {0.8f, 0.5f, 1.0f},
-*/
-    {1.0f, 1.0f, 1.0f}
+    */
+    {1.0f, 0.0f, 0.0f},
+    {0.0f ,1.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 0.8f}
 };
 GLint lightIsDir[NUM_LIGHTS] = {
-/*    0,
     0,
     0,
     0,
-*/
+   // 0,
+
     1
 };
 Camera camera;
@@ -198,9 +200,9 @@ void init(void)
     // Init lights
     glUseProgram(program);
     glUniform3fv(glGetUniformLocation(program, "lightPosDir"),
-            NUM_LIGHTS, &lightPosDir[0].x);
+            NUM_LIGHTS, &(lightPosDir[0].x));
     glUniform3fv(glGetUniformLocation(program, "lightColor"),
-            NUM_LIGHTS, &lightColor[0].x);
+            NUM_LIGHTS, &(lightColor[0].x));
     glUniform1iv(glGetUniformLocation(program, "lightIsDir"),
             NUM_LIGHTS, &lightIsDir);
     // Create models
@@ -222,7 +224,7 @@ void init(void)
     groundPlane->model->numVertices = 4;
     groundPlane->model->numIndices = 6;
     groundPlane->model->texCoordArray = texCoordArray;
-    LOAD_TEXTURE("grass",&(groundPlane->texObjID));
+    LOAD_TEXTURE("dirt",&(groundPlane->texObjID));
 
     skybox = LoadModel("models/skybox.obj");
     LOAD_TEXTURE("SkyBox512", &skyboxTexObjID);

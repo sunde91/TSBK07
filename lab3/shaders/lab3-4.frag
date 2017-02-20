@@ -7,7 +7,7 @@ in vec3 var_Pos;
 uniform sampler2D texUnit;
 uniform mat4 cameraMatrix;
 
-#define NUM_LIGHTS 1
+#define NUM_LIGHTS 4
 uniform vec3 lightPosDir[NUM_LIGHTS];
 uniform vec3 lightColor[NUM_LIGHTS];
 uniform bool lightIsDir[NUM_LIGHTS];
@@ -39,7 +39,7 @@ void main(void)
             vec4 lightView = cameraMatrix * vec4(lightPosDir[i],1.0);
             lightSource = vec3(lightView / lightView.w);
             vec3 posDiff = lightSource - var_Pos;
-            lightStrength = 33.0 / dot(posDiff, posDiff);
+            lightStrength = 10.0 / (dot(posDiff, posDiff));
             lightSource = normalize(posDiff);
         }
 
@@ -61,7 +61,7 @@ void main(void)
 
     tex_Color_accum.r = clamp(tex_Color_accum.r, 0, 1);
     tex_Color_accum.g = clamp(tex_Color_accum.g, 0, 1);
-    tex_Color_accum.r = clamp(tex_Color_accum.b, 0, 1);
+    tex_Color_accum.b = clamp(tex_Color_accum.b, 0, 1);
     tex_Color_accum.a = 1;
     out_Color = tex_Color_accum;
 }
