@@ -22,5 +22,5 @@ void main(void)
     var_Pos = vec3(worldPos / worldPos.w);
 	gl_Position = projMatrix * modelViewMatrix * vec4(in_Position, 1.0);
 
-    var_TexCoord = vec2(in_TexCoord.s, in_TexCoord.t);
+    var_TexCoord = vec2(30*in_TexCoord.s, 30*in_TexCoord.t);
 }
