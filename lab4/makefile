@@ -1,6 +1,12 @@
 # set this variable to the director in which you saved the common files
 COMMON_DIR = ../common/
-PLATFORM = Mac
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Darwin)
+	PLATFORM = Mac
+else
+	PLATFORM = Linux
+endif	
 
 ifeq (${PLATFORM}, Mac)
 	DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.m $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
@@ -14,7 +20,7 @@ FLAGS = -DGL_GLEXT_PROTOTYPES
 INCLUDE = -I$(COMMON_DIR) -I$(COMMON_DIR)/$(PLATFORM)
 
 SRC_DIR = src
-COMPILE = gcc -w
+COMPILE = gcc -w 
 
 PROGRAMS = lab4-1 lab4-2
 all : $(PROGRAMS)
