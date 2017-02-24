@@ -26,20 +26,21 @@ Model* GenerateTerrain(TextureData *tex)
 	GLuint *indexArray = malloc(sizeof(GLuint) * triangleCount*3);
 	
 	printf("bpp %d\n", tex->bpp);
+    printf("texture width = (%d,%f), height =(%d,%f)\n",tex->width,tex->texWidth,tex->height,tex->texHeight);
 	for (x = 0; x < tex->width; x++)
 		for (z = 0; z < tex->height; z++)
 		{
 // Vertex array. You need to scale this properly
 			vertexArray[(x + z * tex->width)*3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 100.0;
+			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 25.0;
 			vertexArray[(x + z * tex->width)*3 + 2] = z / 1.0;
 // Normal vectors. You need to calculate these.
 			normalArray[(x + z * tex->width)*3 + 0] = 0.0;
 			normalArray[(x + z * tex->width)*3 + 1] = 1.0;
 			normalArray[(x + z * tex->width)*3 + 2] = 0.0;
 // Texture coordinates. You may want to scale them.
-			texCoordArray[(x + z * tex->width)*2 + 0] = x; // (float)x / tex->width;
-			texCoordArray[(x + z * tex->width)*2 + 1] = z; // (float)z / tex->height;
+			texCoordArray[(x + z * tex->width)*2 + 0] = (float)x / tex->width * 8.0; // x
+			texCoordArray[(x + z * tex->width)*2 + 1] = (float)z / tex->height *  8.0; // y
 		}
 	for (x = 0; x < tex->width-1; x++)
 		for (z = 0; z < tex->height-1; z++)
@@ -99,6 +100,18 @@ void keyboardCallbackRelease(unsigned char event, int x, int y)
     updateKey(event, 1);
 }
 
+float getHeight(TextureData * heightMap, float scaleFactor, float posX, float posZ) {
+    if( posX < 0 || posZ < 0 )
+        return 0;
+    else if( posX > heightMap->width || posZ > heightMap->height )
+        return 0;
+    
+    int indX = (int)posX;
+    int indZ = (int)posZ;
+    int ind = ((indX + heightMap->width * indZ) * heightMap->bpp) / 8;
+    return scaleFactor * heightMap->imageData[ ind ];
+}
+
 void mouseCallback(int mx, int my) {
     mouseX = mx;
     mouseY = my;
@@ -119,7 +132,7 @@ void init(void)
 	glDisable(GL_CULL_FACE);
 	printError("GL inits");
 
-	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 50.0);
+	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1500.0);
 
 	// Load and compile shader
 	program = loadShaders("terrain.vert", "terrain.frag");
@@ -141,6 +154,8 @@ void updateCameraStuff() {
 
     cameraSetRotateVel(&camera, mouseY, mouseX);
     cameraSetMoveVel(&camera, moveX, 0, moveZ);
+    camera.pos.y = 5.0 + 2*getHeight(&ttex,1.0 / 25.0, camera.pos.x/2, camera.pos.z/2);
+    printf("camera pos = %f,%f,%f\n",camera.pos.x,camera.pos.y, camera.pos.z);
     updateCamera(&camera);
 }
 
