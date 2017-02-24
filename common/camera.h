@@ -65,7 +65,6 @@ void cameraLookAt(Camera * cam, vec3 dir)
     cam->matrix = lookAtv(cam->pos, at, SetVector(0,1,0));
 }
 
-
 void updateCamera(Camera * camera) 
 {
     //vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
@@ -110,6 +109,13 @@ void cameraSetMoveVel(Camera * camera, GLfloat vx, GLfloat vy, GLfloat vz)
     vec4 moveVecGlobal = MultVec4(baseMat, moveVecLocal);
     moveVecGlobal.y = 0; // inte flyga
     camera->vel = vec4tovec3(moveVecGlobal);
+}
+
+void cameraSetTargetY(Camera * camera, float targetY)
+{
+    float alpha = 0.1;
+    camera->pos.y *= (1.0 - alpha);
+    camera->pos.y += alpha * targetY;
 }
 
 #endif

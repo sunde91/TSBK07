@@ -154,7 +154,7 @@ void updateCameraStuff() {
 
     cameraSetRotateVel(&camera, mouseY, mouseX);
     cameraSetMoveVel(&camera, moveX, 0, moveZ);
-    camera.pos.y = 5.0 + 2*getHeight(&ttex,1.0 / 25.0, camera.pos.x/2, camera.pos.z/2);
+    cameraSetTargetY(&camera, 5.0 + 2*getHeight(&ttex,1.0 / 25.0, camera.pos.x/2, camera.pos.z/2));
     printf("camera pos = %f,%f,%f\n",camera.pos.x,camera.pos.y, camera.pos.z);
     updateCamera(&camera);
 }
