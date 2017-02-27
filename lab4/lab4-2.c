@@ -109,6 +109,7 @@ float getHeight(TextureData * heightMap, float scaleFactor, float posX, float po
     int indX = (int)posX;
     int indZ = (int)posZ;
     int ind = ((indX + heightMap->width * indZ) * heightMap->bpp) / 8;
+    printf("posX = %f, posZ = %f, indX = %d, indZ = %d, height = %d\n", posX, posZ, indX, indZ,  heightMap->imageData[ind]);
     return scaleFactor * heightMap->imageData[ ind ];
 }
 
@@ -126,6 +127,8 @@ void mouseCallback(int mx, int my) {
 void init(void)
 {
 	camera = newCamera();
+    camera.pos = SetVector(0,5,0);
+    camera.yaw = M_PI / 4;
 	// GL inits
 	glClearColor(0.2,0.2,0.5,0);
 	glEnable(GL_DEPTH_TEST);
@@ -135,17 +138,17 @@ void init(void)
 	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1500.0);
 
 	// Load and compile shader
-	program = loadShaders("terrain.vert", "terrain.frag");
+	program = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
 	glUseProgram(program);
 	printError("init shader");
 	
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
-	LoadTGATextureSimple("maskros512.tga", &tex1);
+	LoadTGATextureSimple("textures/maskros512.tga", &tex1);
 	
 // Load terrain data
 	
-	LoadTGATextureData("fft-terrain.tga", &ttex);
+	LoadTGATextureData("textures/fft-terrain.tga", &ttex);
 	tm = GenerateTerrain(&ttex);
 	printError("init terrain");
 }
@@ -154,7 +157,7 @@ void updateCameraStuff() {
 
     cameraSetRotateVel(&camera, mouseY, mouseX);
     cameraSetMoveVel(&camera, moveX, 0, moveZ);
-    cameraSetTargetY(&camera, 5.0 + 2*getHeight(&ttex,1.0 / 25.0, camera.pos.x/2, camera.pos.z/2));
+    cameraSetTargetY(&camera, 5.0 + getHeight(&ttex,1.0 / 25.0, camera.pos.x, camera.pos.z));
     printf("camera pos = %f,%f,%f\n",camera.pos.x,camera.pos.y, camera.pos.z);
     updateCamera(&camera);
 }

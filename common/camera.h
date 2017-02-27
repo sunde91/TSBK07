@@ -65,6 +65,18 @@ void cameraLookAt(Camera * cam, vec3 dir)
     cam->matrix = lookAtv(cam->pos, at, SetVector(0,1,0));
 }
 
+void printCam(Camera * cam) 
+{
+    int i,j;
+    for(i = 0; i < 4; ++i)
+    {
+        for(j = 0; j < 4; ++j)
+            printf("%f,",cam->matrix.m[i*4+j]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void updateCamera(Camera * camera) 
 {
     //vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
@@ -74,8 +86,11 @@ void updateCamera(Camera * camera)
     camera->yaw += camera->yawSpeed;
     mat4 R = matFromAngles(camera->pitch, camera->yaw);
     mat4 n = T( - camera->pos.x, - camera->pos.y, - camera->pos.z); // obs : negative
-    camera->matrix = Mult(R, MatrixAdd(IdentityMatrix(), n));
-    vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
+    //Ttot.m[15] = 1.0;
+    camera->matrix = Mult(R, n);
+    printf("cam matrix = \n");
+    printCam(camera);
+    //vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
     //printf("dir = %f,%f,%f\n", -dir.x, -dir.y, -dir.z);
     //printf("pitch = %f, yaw = %f\n", camera->pitch, camera->yaw);
 }
