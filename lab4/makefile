@@ -25,9 +25,9 @@ COMPILE = gcc -w
 PROGRAMS = lab4-1 lab4-2
 all : $(PROGRAMS)
 
-lab4-1 : lab4-1.c $(DEPS)
+lab4-1 : src/lab4-1.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
-lab4-2 : lab4-2.c $(DEPS)
+lab4-2 : src/lab4-2.c $(DEPS)
 	$(COMPILE) -o $@ $(INCLUDE) $(FLAGS) $< $(DEPS) $(LIBS)
 
 .PHONY: clean
