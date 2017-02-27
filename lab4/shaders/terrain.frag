@@ -12,7 +12,9 @@ void main(void)
 	//outColor = texture(tex, texCoord);
 
     //vec3 reflection = reflect(lightSource, normal); //2 * dot(normal, lightSource) * normal - lightSource;
+    float shadeAmbient = 0.2;
     float shadeDiffuse = clamp(dot(varNormal, varLight), 0, 1);
+    float shade = clamp(shadeAmbient + 0.7*shadeDiffuse,0,1);
     /*
     float shadeSpec = pow(clamp(dot(v_Pos, reflection), 0, 1), 25.0);
 
@@ -25,5 +27,5 @@ void main(void)
     tex_Color /= 4;
     */
     vec4 texColor = texture(tex, texCoord);
-    outColor = shadeDiffuse * texColor;
+    outColor = shade * texColor;
 }
