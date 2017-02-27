@@ -96,11 +96,70 @@ Model* GenerateTerrain(TextureData *tex)
 	return model;
 }
 
+Model * GenerateWater(TextureData *tex, float waterLevel)
+{
+	int vertexCount = tex->width * tex->height;
+	int triangleCount = (tex->width-1) * (tex->height-1) * 2;
+	int x, z;
+	
+	GLfloat *vertexArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
+	GLfloat *normalArray = malloc(sizeof(GLfloat) * 3 * vertexCount);
+	GLfloat *texCoordArray = malloc(sizeof(GLfloat) * 2 * vertexCount);
+	GLuint *indexArray = malloc(sizeof(GLuint) * triangleCount*3);
+	
+	printf("bpp %d\n", tex->bpp);
+	printf("texture width = (%d,%f), height =(%d,%f)\n",tex->width,tex->texWidth,tex->height,tex->texHeight);
+	for (x = 0; x < tex->width; x++)
+		for (z = 0; z < tex->height; z++)
+		{
+// Vertex array. You need to scale this properly
+			vertexArray[(x + z * tex->width)*3 + 0] = x / 1.0;
+			vertexArray[(x + z * tex->width)*3 + 1] = waterLevel;
+			vertexArray[(x + z * tex->width)*3 + 2] = z / 1.0;
+// Normal vectors. You need to calculate these.
+			normalArray[(x + z * tex->width)*3 + 0] = 0.0;
+			normalArray[(x + z * tex->width)*3 + 1] = 1.0;
+			normalArray[(x + z * tex->width)*3 + 2] = 0.0;
+			
+// Texture coordinates. You may want to scale them.
+			texCoordArray[(x + z * tex->width)*2 + 0] = (float)x / tex->width * 100.0; // x
+			texCoordArray[(x + z * tex->width)*2 + 1] = (float)z / tex->height *  100.0; // y
+		}
+	for (x = 0; x < tex->width-1; x++)
+		for (z = 0; z < tex->height-1; z++)
+		{
+		// Triangle 1
+			indexArray[(x + z * (tex->width-1))*6 + 0] = x + z * tex->width;
+			indexArray[(x + z * (tex->width-1))*6 + 1] = x + (z+1) * tex->width;
+			indexArray[(x + z * (tex->width-1))*6 + 2] = x+1 + z * tex->width;
+		// Triangle 2
+			indexArray[(x + z * (tex->width-1))*6 + 3] = x+1 + z * tex->width;
+			indexArray[(x + z * (tex->width-1))*6 + 4] = x + (z+1) * tex->width;
+			indexArray[(x + z * (tex->width-1))*6 + 5] = x+1 + (z+1) * tex->width;
+		}
+	// Normal vectors
+	
+	// End of terrain generation
+	
+	// Create Model and upload to GPU:
+
+	Model* model = LoadDataToModel(
+			vertexArray,
+			normalArray,
+			texCoordArray,
+			NULL,
+			indexArray,
+			vertexCount,
+			triangleCount*3);
+
+	return model;
+}
+
 
 // vertex array object
-Model *m, *m2, *tm;
+Model *m, *m2, *tm, *water;
 // Reference to shader program
-GLuint program, ball;
+GLuint program, ball, waterProgram;
 GLuint tex1, tex2;
 TextureData ttex; // terrain
 float mouseX, mouseY;
@@ -229,6 +288,7 @@ void init(void)
 	
 	LoadTGATextureData("textures/fft-terrain.tga", &ttex);
 	tm = GenerateTerrain(&ttex);
+	water = GenerateWater(&ttex, 3.0);
 	printError("init terrain");
 
 	// Init Camera
@@ -239,6 +299,9 @@ void init(void)
 	glClearColor(0.2,0.2,0.5,0);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	printError("GL inits");
 
 	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 1500.0);
@@ -246,18 +309,25 @@ void init(void)
 	// Load and compile shader
 	program = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
 	ball = loadShaders("shaders/ball.vert", "shaders/ball.frag");
+	waterProgram = loadShaders("shaders/water.vert", "shaders/water.frag");
 	glUseProgram(program);
 	printError("init shader");
 	
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
 	LoadTGATextureSimple("textures/grass.tga", &tex1);
+	printError("program shader");
 
 	glUseProgram(ball);
 	glUniformMatrix4fv(glGetUniformLocation(ball, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
-	//glUniform1i(glGetUniformLocation(ball, "tex"), 0); // Texture unit 0
-	
 	m2 = createObject("models/groundsphere.obj");
+	//glUniform1i(glGetUniformLocation(ball, "tex"), 0); // Texture unit 0
+	printError("ball shader");
+
+	glUseProgram(waterProgram);
+	glUniformMatrix4fv(glGetUniformLocation(waterProgram, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+	printError("water shader");
+	
 }
 
 void updateCameraStuff() {
@@ -301,6 +371,16 @@ void display(void)
 	total = Mult(camMatrix, modelView); // Mult(camMatrix, modelView);
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 	DrawModel(m2,program,"inPosition", "inNormal", "inTexCoord");
+
+	// draw water
+	glUseProgram(waterProgram);
+	GLuint loc = glGetAttribLocation(waterProgram, "inPosition"); printf("inPos = %d\n", loc);
+	loc = glGetAttribLocation(waterProgram, "inNormal"); printf("inNormal = %d\n", loc);
+	loc = glGetAttribLocation(waterProgram, "inTexCoord"); printf("inTex = %d\n", loc);
+	glEnable(GL_BLEND);
+	glUniformMatrix4fv(glGetUniformLocation(waterProgram, "mdlMatrix"), 1, GL_TRUE, camera.matrix.m);
+	DrawModel(water, waterProgram, "inPosition", "inNormal", "inTexCoord");
+	glDisable(GL_BLEND);
 
 	printError("display 2");
 	
