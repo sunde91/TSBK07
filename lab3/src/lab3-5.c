@@ -20,7 +20,8 @@
 #include "init_object.h"
 #include "camera.h"
 
-// 3.1) 
+// 5.1) Mulitply color channels
+// 5.2) Blur light selects one texture, green selects the other (linear combination)
 
 // Defs 
 

@@ -20,7 +20,8 @@
 #include "init_object.h"
 #include "camera.h"
 
-// 3.1) 
+// 4.1) Take the vertex in view coordinates (fragment shader)
+// 4.2) Normals and directions
 
 // Defs 
 

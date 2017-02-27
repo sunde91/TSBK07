@@ -21,6 +21,9 @@
 #include "camera.h"
 
 // 3.1) 
+// 3.2) 
+// 3.3)
+// 3.4) Not complete
 
 // Globals
 // Data would normally be read from files
