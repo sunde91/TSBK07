@@ -4,19 +4,27 @@ out vec4 outColor;
 in vec2 texCoord;
 in vec3 varNormal;
 in vec3 varLight;
+in vec3 varPos;
+
 uniform sampler2D tex;
 void main(void)
 {
 
 	//outColor = texture(tex, texCoord);
 
-    //vec3 reflection = reflect(lightSource, normal); //2 * dot(normal, lightSource) * normal - lightSource;
+    vec3 normal = normalize(varNormal);
+    vec3 light = normalize(varLight);
     float shadeAmbient = 0.5;
-    float shadeDiffuse = clamp(dot(varNormal, varLight), 0, 1);
-    float shade = clamp(shadeAmbient + 0.7*shadeDiffuse,0,1);
-    /*
-    float shadeSpec = pow(clamp(dot(v_Pos, reflection), 0, 1), 25.0);
+    float shadeDiffuse = clamp(dot(normal, light), 0, 1);
 
+    vec3 reflection = 2 * dot(normal, light) * normal - light;
+    //vec3 reflection = reflect(light, normal); //
+    vec3 myPosDirection = - normalize(varPos);
+    float shadeSpec = pow(clamp(dot(myPosDirection, reflection), 0, 1), 50.0);
+
+    float shade = clamp(shadeAmbient + 0.5*shadeDiffuse + 0.5*shadeSpec,0,1);
+
+    /*
     float shade = shadeAmbient + k_d * shadeDiffuse + k_s * shadeSpec;
     shade = lightStrength * shade;
     vec4 tex_Color0 = shade * texture(texUnit0, var_TexCoord);
@@ -26,5 +34,5 @@ void main(void)
     tex_Color /= 4;
     */
     vec4 texColor = texture(tex, texCoord);
-    outColor = shade * texColor;
+    outColor = shade * vec4(1.0);
 }

@@ -63,8 +63,8 @@ Model* GenerateTerrain(TextureData *tex)
 				normalArray[(x + z * tex->width)*3 + 2] = 0.0;
 			}
 // Texture coordinates. You may want to scale them.
-			texCoordArray[(x + z * tex->width)*2 + 0] = (float)x / tex->width * 8.0; // x
-			texCoordArray[(x + z * tex->width)*2 + 1] = (float)z / tex->height *  8.0; // y
+			texCoordArray[(x + z * tex->width)*2 + 0] = (float)x / tex->width * 100.0; // x
+			texCoordArray[(x + z * tex->width)*2 + 1] = (float)z / tex->height *  100.0; // y
 		}
 	for (x = 0; x < tex->width-1; x++)
 		for (z = 0; z < tex->height-1; z++)
@@ -100,7 +100,7 @@ Model* GenerateTerrain(TextureData *tex)
 // vertex array object
 Model *m, *m2, *tm;
 // Reference to shader program
-GLuint program;
+GLuint program, ball;
 GLuint tex1, tex2;
 TextureData ttex; // terrain
 float mouseX, mouseY;
@@ -245,14 +245,19 @@ void init(void)
 
 	// Load and compile shader
 	program = loadShaders("shaders/terrain.vert", "shaders/terrain.frag");
+	ball = loadShaders("shaders/ball.vert", "shaders/ball.frag");
 	glUseProgram(program);
 	printError("init shader");
 	
 	glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0); // Texture unit 0
-	LoadTGATextureSimple("textures/maskros512.tga", &tex1);
+	LoadTGATextureSimple("textures/grass.tga", &tex1);
+
+	glUseProgram(ball);
+	glUniformMatrix4fv(glGetUniformLocation(ball, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+	//glUniform1i(glGetUniformLocation(ball, "tex"), 0); // Texture unit 0
 	
-	m2 = createObject("models/octagon.obj");
+	m2 = createObject("models/groundsphere.obj");
 }
 
 void updateCameraStuff() {
@@ -275,11 +280,9 @@ void display(void)
 	mat4 total, modelView, camMatrix;
 	
 	printError("pre display");
-	
-	glUseProgram(program);
 
 	// Build matrix
-	
+	glUseProgram(program);
 	camMatrix = camera.matrix;
 	modelView = IdentityMatrix();
 	total = Mult(camMatrix, modelView);
@@ -288,8 +291,13 @@ void display(void)
 	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
 	DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
 	printError("display 1");
-	modelView = T(128,20,128);
-	modelView = Mult(modelView, S(10,10,10));
+
+	// draw ball
+	glUseProgram(ball);
+	float x = camera.pos.x + sin(camera.yaw)*10;
+	float z = camera.pos.z - cos(camera.yaw)*10;
+	float y = getHeightExact(tm, &ttex, x,z);
+	modelView = Mult(T(x,y,z), S(2,2,2));
 	total = Mult(camMatrix, modelView); // Mult(camMatrix, modelView);
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 	DrawModel(m2,program,"inPosition", "inNormal", "inTexCoord");
