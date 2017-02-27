@@ -88,8 +88,8 @@ void updateCamera(Camera * camera)
     mat4 n = T( - camera->pos.x, - camera->pos.y, - camera->pos.z); // obs : negative
     //Ttot.m[15] = 1.0;
     camera->matrix = Mult(R, n);
-    printf("cam matrix = \n");
-    printCam(camera);
+    //printf("cam matrix = \n");
+    //printCam(camera);
     //vec3 dir = vecFromAngles(camera->pitch, camera->yaw);
     //printf("dir = %f,%f,%f\n", -dir.x, -dir.y, -dir.z);
     //printf("pitch = %f, yaw = %f\n", camera->pitch, camera->yaw);
@@ -128,7 +128,7 @@ void cameraSetMoveVel(Camera * camera, GLfloat vx, GLfloat vy, GLfloat vz)
 
 void cameraSetTargetY(Camera * camera, float targetY)
 {
-    float alpha = 0.1;
+    float alpha = 0.5;
     camera->pos.y *= (1.0 - alpha);
     camera->pos.y += alpha * targetY;
 }
