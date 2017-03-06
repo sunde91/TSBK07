@@ -266,7 +266,7 @@ void init(void)
     CenterModel(skybox);
     init_object(vertexArrayObjID[SKYBOX], skybox, skyboxShader);
     skyboxOffset.x = 0;
-    skyboxOffset.y = 1.8;
+    skyboxOffset.y = 0.9;
     skyboxOffset.z = 0;
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projMatrix"), 1, GL_TRUE, projectionMatrix);
 

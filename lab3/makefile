@@ -1,6 +1,6 @@
 # set this variable to the director in which you saved the common files
 COMMON_DIR = ../common/
-PLATFORM = Linux
+PLATFORM = Mac
 
 ifeq (${PLATFORM}, Mac)
 	DEPS = $(COMMON_DIR)$(PLATFORM)/MicroGlut.m $(COMMON_DIR)GL_utilities.c $(COMMON_DIR)VectorUtils3.c $(COMMON_DIR)loadobj.c $(COMMON_DIR)LoadTGA.c 
@@ -32,4 +32,4 @@ lab3-5 : $(SRC_DIR)/lab3-5.c $(DEPS)
 
 .PHONY: clean
 clean :
-	rm $(PROGRAMS) *~
+	@ rm -rf $(PROGRAMS) *~
