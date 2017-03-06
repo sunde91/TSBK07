@@ -44,7 +44,7 @@ void init_object(GLuint vertexArrayObjID, Model * model, GLuint program){
         printError("normal");
         // VBO tex data
         
-        if (model->texCoordArray != NULL)
+        if (model->texCoordArray != (void *)0)
         {
             glBindBuffer(GL_ARRAY_BUFFER, texBufferObjID);
             printError("1");
